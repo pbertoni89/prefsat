@@ -1,0 +1,11 @@
+\section{Livello \emph{local optimum search}}
+Rappresenta la parte meno evoluta e responsabile di decisioni dell'algoritmo. Viene invocato una volta che \emph{STM} ha deciso quale mossa intraprendere: 
+a quel punto l'intorno è definibile esattamente ed esplorabile. Si è adottato un paradigma \emph{best improvement}, perciò la ricerca nel medesimo sarà esaustiva.
+La valutazione delle possibili soluzioni $(x\prime,g\prime)$ è limitata alle sole che:  
+\begin{itemize}
+  \item non sono la soluzione corrente $(x\prime,g\prime) \neq (x,g)$
+  \item non sono vietate dalla \emph{taboo list}.
+  \item sono vietate dalla \emph{TL} ma soddisfano i \emph{criteri di aspirazione}.
+  \item sono feasible e quindi $TQ_{OK}$.
+\end{itemize}
+Quindi verrà mantenuta una cache del massimo $(\hat{x}\prime,\hat{g}\prime)$ trovato, confrontandola sempre con le nuove soluzioni generate.

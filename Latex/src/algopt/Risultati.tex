@@ -1,0 +1,130 @@
+\section{Andamento dimostrativo del livello \emph{LOS}}
+Il programma mentre lavora può scrivere file come scripts per gli interpreti Matlab/Octave. Viene presentato ora un andamento medio durante un'esecuzione \emph{STM}.
+Successive estensioni del programma possono produrre nuovi aggregati grafici ancora più significativi e complessi.
+	\begin{figure}[H] 
+	 	\begin{center}\includegraphics[scale=0.7]{./images/demo/full.png}
+	 	\end{center} 
+	 	\caption{Esempio di iterazione \emph{STM} computata per un singolo veicolo, composta da 1000 iterazioni \emph{LOS}. 
+	 			In blu è presentato il profitto ottenuto, in verde e in rosso le risorse \emph{carico} e \emph{tempo} ancora a disposizione.}
+	 	\label{fig:demoFull}
+ 	\end{figure}
+ 	
+ 	\begin{figure}[H] 
+	 	\begin{center}\includegraphics[scale=0.7]{./images/demo/zoom.png}
+	 	\end{center} 
+	 	\caption{Un dettaglio del grafico precedente.}
+	 	\label{fig:demoZoom}
+ 	\end{figure}
+ 	
+ 	\begin{figure}[H] 
+	 	\begin{center}\includegraphics[scale=0.6]{./images/demo/histo_moves.png}
+	 	\end{center} 
+	 	\caption{Istogramma delle mosse selezionate durante l'algoritmo. Sulle
+	 	ascisse si hanno rispettivamente \emph{ADD}, \emph{SWAP}, \emph{REMOVE}.}
+	 	\label{fig:demoHisto}
+ 	\end{figure}
+
+In figura \ref{fig:demoFull} è possibile vedere una tipica esplorazione \emph{STM} dello spazio delle soluzioni. \\
+Forti oscillazioni sono segnale di una grande velocità di span nello spazio, quindi di un valore di tenure accettabilmente basso. 
+Andamenti negativi occorrono ogniqualvolta la mossa sia di tipo peggiorativo. 
+Andamenti costanti, come quelli evidenziati nello zoom di figura \ref{fig:demoZoom}, invece quasi sempre accadono in concomitanza con fallimenti
+delle mosse. Grazie al non determinismo introdotto a livello \emph{STM}, è possibile riuscire a sganciarsi dal punto morto dello spazio di soluzioni 
+dove ci si è fermati, soprattutto grazie alle mosse correttive di tipo \emph{remove}.
+
+Si noti che, sebbene l'eventuale presenza di un trend crescente non sia un andamento da disdegnare, essa non implica minimamente,
+ a giudizio dei designer, che l'algoritmo sia performante. Al più è tipica di una grande stabilità nell'evoluzione 
+di \emph{STM}, il che potrebbe significare che si stanno utilizzando tenures elevate. Chiaramente, queste considerazioni sono da rapportare sempre al problema in esame:
+grafi che potremmo vedere come \emph{sbilanciati}, magari per poco $T$ totale ed eccessivo $Q$, potrebbero indurre a valutazioni pessimiste delle performances.
+Questo suggerisce che un'analisi \emph{assoluta} delle performance sia molto incerta, e che pertanto confronti più significativi si possano fare solo relativamente a benchmark di diverse parti,
+come è possibile vedere in sezione \ref{sec:testcases}. 
+
+\section{Casi di test e confronto benchmarks}
+\label{sec:testcases} 
+I test sono stati sviluppati per verificare la dipendenza del valore della funzione obiettivo rispetto a tre gradi di libertà, governati dai rispettivi parametri:
+\begin{itemize}
+	\item il numero di iterazioni Long Term Memory $itSTM$
+	\item la durata delle tabu tenures per gli archi aggiunti $\lambda_{ADD}$ e rimossi $\lambda_{REM}$
+	\item la tipologia di valutatore (\emph{smart} e \emph{wise}, si è escluso il rudimentale \emph{pure}).
+\end{itemize}
+Del suddetto insieme di variabili sono stati istanziati quattro casi concreti, ognuno differente dal suo vicino per una singola variabile dimensionale.
+In questo modo è possibile, oltre che a testare set preferenziali di configurazione, cercare di isolare l'effetto dei singoli parametri.
+\begin{itemize}
+\item \textbf{caso A}: $itSTM$ = 1; $\;\lambda_{ADD}$ = 2; $\;\lambda_{REM}$ = 1; $\;$valutatore = Wise
+\item \textbf{caso B}: $itSTM$ = 5; $\;\lambda_{ADD}$ = 2; $\;\lambda_{REM}$ = 1; $\;$valutatore = Wise
+\item \textbf{caso C}: $itSTM$ = 5; $\;\lambda_{ADD}$ = 4; $\;\lambda_{REM}$ = 3; $\;$valutatore = Wise
+\item \textbf{caso D}: $itSTM$ = 5; $\;\lambda_{ADD}$ = 4; $\;\lambda_{REM}$ = 3; $\;$valutatore = Smart
+\end{itemize}
+
+Dato un set di grafi, per ciascuno di essi è stato testato l'algoritmo con un numero di veicoli dapprima pari a due, 
+quindi a tre ed infine pari a quattro, per coprire il set di benchmark offerte da terze parti. Per ogni verifica l'algoritmo è stato eseguito tre volte, 
+andando a considerare tra queste la sola che avesse il profitto maggiore. Successivamente i risultati ottenuti sono stati riportati su di una tabella per
+permettere significative aggregazioni dei dati.
+
+I raffronti con le benchmark di terze parti ricevute insieme alle specifiche del problema sono stati effettuati per i test \textbf{ORG} e i test \textbf{MDF}.
+
+\subsection{Confronto con \emph{ORG}}
+In figura \ref{fig:benchHisto} si vede un istogramma delle performance relative di \emph{JC\_UCARPP} rispetto ad \emph{ORG}. 
+Sia $J$ un profitto totale tra i veicoli ottenuto durante l'esecuzione di un test con il software proprietario,
+sia invece $J^\prime$ il profitto totale sul medesimo test con il software \emph{ORG}, si definisce $\eta= \frac{J}{J^\prime}$ come la \emph{performance relativa} dell'
+algoritmo. Nulla vieta che $\eta > 1$ visto che entrambi gli algoritmi sono metaeuristici e non ottimi, ma questa situazione non si è verificata nei test. 
+In un paio di casi, però, si è potuto ottenere $\eta = 1$. 
+
+\begin{figure}[H] 
+ 	\begin{center}\includegraphics[scale=0.7]{./images/benchHisto.png}
+ 	\end{center} 
+ 	\caption{Istogramma delle performance relative a ORG ottenute sui quattro casi di test.}
+ 	\label{fig:benchHisto}
+\end{figure}
+
+Una visione esaustiva dei risultati del test e delle informazioni da essi estrapolate è contenuta nel foglio di calcolo allegato alla presente documentazione,
+la cui lettura è \textbf{caldamente suggerita} prima di procedere oltre. Il file è composto da tre fogli, ove le performance relative sono analizzate rispettivamente su
+$J_k$ (come originariamente è stato definito $\eta$), $\tau$ e $\theta$, per avere un'idea migliore della bontà dell'algoritmo.
+Si noti che nei casi $\eta_\tau$ ed $\eta_\theta$ il rendimento desiderato è da leggersi in senso inverso, perchè riguarda risorse spese od occupate. Questa nota è però da relativizzare
+qualora ad esempio il problema \emph{UCARPP} sotto esame sia un sottoproblema di un framework più grande ove lo storage sia da tenere in considerazione, e quindi può esser fortemente desiderato
+dare fondo a tutte le risorse in magazzino piuttosto che restare con merce invenduta. 
+Analisi più dettagliate e qui non svolte, giustificate dietro una spinta di business, potrebbero aggregare ulteriormente questi dati per relativizzare i profitti sulle risorse, ad esempio.
+
+Dallo studio dei risultati in particolare emergono, tra tutte le possibili, le seguenti considerazioni:
+\begin{itemize}
+  \item l'algoritmo offre le prestazioni migliori con un numero di veicoli maggiore, sia mediamente, sia nel caso di picco (i profitti ottenuti equivalgono ai profitti \emph{ORG})!
+  \item nella quasi metà del test set, le prestazioni relative si trovano tra il 60\% e 70\% delle controparti offerte da \emph{ORG}.
+  \item la bontà delle perfomances dipende talvolta fortemente dal problema e debolmente dai parametri, o equivalentemente \emph{le configurazioni di test non sono sufficientemente 
+  ricoprenti lo span dello spazio dei parametri}. Non è però detto che nuove configurazioni, più \emph{tuned} delle quattro usate nel test, modifichino questo asset: è possibile che la progettazione stessa
+  e la conseguente codifica dei parametri all'interno dei livelli di logica \emph{non} abbia rispettato l'ideale libertà di controllo che i designer si erano prefigurati, di fatto
+  inibendo l'efficienza della \emph{customizzazione} del programma a run-time. Future piattaforme di test potranno confermare o confutare questa convinzione dei progettisti.
+  \item A livello \emph{LTM} si è confrontato il numero di intensificazioni contro quello delle diversificazioni operate. 
+  		Per ogni grafo testato sono state eseguiti 10 cicli \emph{STM}: il risultato totale afferma che, su tutti i grafi eseguiti, il livello LTM tende leggermente a diversificare piuttosto che ad intensificare,
+  		con 473 diversificazioni contro 343 intensificazioni. Questo può indurre a pensare che la soglia di intensificazione potrebbe essere diminuita per consentire una maggiore prevalenza di diversificazioni,
+  		e quindi ad una esplorazione più completa dello spazio delle soluzioni.
+  \item mediamente i tempi spesi nel servizio dei grafi sono l'$80\%$ dei tempi ORG, ma in pochi casi quasi raddoppiano. Vi è una varianza maggiore che nell'analisi del profitto.
+  \item mediamente le risorse servite sui grafi sono il $60\%$ delle ORG. Questo dato è positivo o negativo a seconda degli obiettivi.
+\end{itemize}
+
+\subsection{Confronto con \emph{MDF}}
+In figura \ref{fig:benchHisto_MDF} si vede un istogramma delle performance relative di \emph{JC\_UCARPP} rispetto ad \emph{MDF}. 
+
+\begin{figure}[H] 
+ 	\begin{center}\includegraphics[scale=0.7]{./images/benchHisto_MDF.png}
+ 	\end{center} 
+ 	\caption{Istogramma delle performance relative a MDF ottenute sui quattro casi di test.}
+ 	\label{fig:benchHisto_MDF}
+\end{figure}
+
+Per i risultati visibili nel foglio di calcolo, valgono le stesse note fatte per \emph{ORG}.
+
+Dallo studio dei risultati in particolare emergono, tra tutte le possibili, le seguenti considerazioni:
+\begin{itemize}
+  \item la varianza delle prestazioni è molto aumentata rispetto ad \emph{ORG}. Nei casi limite si va da un pessimo $\frac{1}{3}$ a un notevole $\frac{9}{5}$. La media si mantiene invece sul 60\%.
+  \item le configurazioni \emph{B} e \emph{D} sembrano lavorare leggermente meglio delle altre.
+  \item il numero di veicoli utilizzato non sembra governare direttamente le performances.
+  \item le performances $\eta_\tau$ ed $\eta_\theta$ sono comparabili a quelle trovate rispetto ad \emph{ORG}.
+\end{itemize}
+
+\subsection{Conclusioni derivate dalla comparazione tra i due confronti}
+Dai dati raccolti,
+\begin{itemize} 
+  \item considerato che i vincoli $T,\,Q$ di \emph{ORG} sono superiori a quelli prefissati da \emph{MDF} per ogni istanza o quasi,
+  \item supposta una quasi-ottimalità delle benchmarks di ambo gli algoritmi di terze parti,
+\end{itemize}
+ si può ipotizzare che una maggiore disponibilità di risorse (ciò che accade confrontando \emph{ORG}) induce risoluzioni statisticamente più stabili, mentre con spazi ristretti
+ l'algoritmo \emph{JC\_UCARPP} tende ad essere più imprevedibile.

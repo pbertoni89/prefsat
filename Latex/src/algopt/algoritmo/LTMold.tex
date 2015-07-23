@@ -1,0 +1,29 @@
+\section{Livello \emph{long-term memory}}
+È il livello di logica più alta del programma e utilizza \emph{STM} per la ricerca di ottimi lontani dalla portata di \emph{STM}.ù 
+Inizialmente \emph{LTM} genera una soluzione costruttiva tra le due possibili ora esposte.
+\begin{itemize}
+\item Intensificativa: la soluzione iniziale per l'algoritmo è una soluzione finale ottenuta in un'esecuzione precedente. 
+\item Diversificativa: avente come input più soluzioni finali ottenute precedentemente, estrapola da esse gli archi storicamente meno selezionati
+  con i quali costruire una struttura a rami, realizzando degli archi doppi su di essi, fino all'esaurimento delle risorse. 
+  In tal modo il percorso risultante appare come un ciclo, sempre di tipo feasible, che parte dal deposito e tiene in considerazione il valutatore.
+\end{itemize}
+Nodo focale di \emph{LTM} è quindi il modo in cui vengono generate le costruttive. 
+
+Poi invoca una o più esecuzioni del livello \emph{STM}, che sarà diversificante oppure intensificante a seconda della costruttiva elaborata.
+%Per esempio, nuove diversificazioni sempre più promettenti spingono verso richieste di ulteriori diversificazioni.
+
+\subsection{Diversificazione della ricerca}
+	È mirata a decidere, sulla base di alcuni parametri, la soluzione iniziale da affidare a una nuova esecuzione di \emph{STM}.
+	La soluzione iniziale affidata alla \emph{prima} esecuzione di \emph{STM} è definita in modo a sè stante come \emph{euristica costruttiva}.
+	
+\subsection{Intensificazione della ricerca}
+
+
+\subsection{Logica di selezione}
+\label{subsec:ltmlogic}
+	\subsubsection{LTM Treshold}	
+	
+	
+	
+	Attraverso l'INTENSIFICAZIONE (maggior esplorazione di una parte del dominio applicativo) STM restituisce una soluzione che viene utilizzata come costruttiva per la successiva iterazione a livello corto.
+Con la DIVERSIFICAZIONE (nuove costruttive al fine di esplorare diversi spazi del dominio applicativo), grazie alle informazioni provenienti da STM, viene costruita una soluzione che passi per gli archi meno utilizzati in quanto questi, dal punto di vista statistico, aprono la possibilit\'{a} al raggiungimento di soluzioni lontane dal dominio applicativo e non ancora esplorate.

@@ -1,0 +1,49 @@
+\section{Architettura}
+	Il software è stato pensato per esser versatile a futuri sviluppi anche commerciali, focalizzando l'attenzione sulla
+	\emph{modularità} e sull'\emph{estensibilità} del prodotto. In una concezione verticale (\emph{stack architetturale})
+	della struttura, a basso livello si trova \emph{alg}, cioè il risolutore metaeuristico implementato e funzione \emph{core}
+	del progetto, mentre ad alto livello si trovano le interfacce con l'utente, delle quali per ora è implementata solo \emph{cli}
+	(command-line-interface). La \emph{cli} permette un'interazione descritta accuratamente nella sezione ``Casi d'Uso''.
+	Tra questi due macrolivelli vi è un \emph{socket hard-soft} che gestisca l'interazione alto-basso in modo trasparente per i 
+	moduli realmente implementati. Esso inoltre contiene il layer \emph{stats} per gestire le statistiche, dandole diversa forma
+	a seconda del caso d'uso richiesto.
+	\begin{figure}[H] 
+	 	\begin{center}\includegraphics[width=12cm]{./images/stack-arch.pdf}
+	 	\end{center} \caption{Architettura del software progettata
+	e in parte implementata.} \label{fig:stackArch}
+ 	\end{figure}
+	\subsection{Estensioni previste}
+	\subsubsection{Interfacce grafiche}
+	Tramite il software \emph{JNI} (Java Native Interface) è possibile collegarsi a tempo di compilazione con programmi Java.
+	È pensabile quindi una \emph{gui} per l'interazione, o ancora più in là un applicativo Android (al limite un mero client)
+	per demandare al cuore del programma la risoluzione di problemi di algoritmi di ottimizzazione.
+	Infine è stato teorizzato un livello grafico Matlab per la presentazione di grafici statistici per l'utente e di evoluzione
+	dell'algoritmo per i designer. 
+	\subsubsection{Risolutori}
+	Volendo in futuro testare ulteriori risolutori metaeuristici, approssimati o esatti senza per questo modificare la prima versione 
+	del risolutore implementata, dev'essere possibile collegare ``parallelamente'' ad essa le nuove versioni. In questo senso il socket
+	intermedio agisce da \emph{multiplexer} sul livello basso.
+
+\section{Parametri e configurazione}
+\label{sec:cfg}
+	Automatizzare l'inserimento del problema nel programma richiede una certa complessità di progettazione che però viene 
+	ampiamente ripagata in termini di tempo e usabilità.
+	Un parser permette la piena personalizzazione del programma in un'ottica di versione Release, 
+	dove al customer non è generalmente concesso di ricompilare
+	frequentemente valori che nativamente è meglio inserire tramite un \emph{file di configurazione}. 
+	I parametri di programma specificati dal file sono i seguenti:
+	\begin{itemize}
+	  \item "percorso grafo": \emph{stringa}
+	  \item "numero veicoli": \emph{intero}
+	  \item "nome immagine costruttiva": \emph{stringa}
+	  \item "bmp per LOS \{true,false\}": \emph{stringa}
+	  \item "octave per LOS \{true,false\}": \emph{stringa}
+	  \item "metodo di valutazione \{0,1,2\} (pure,smart,wise)": \emph{intero}
+	  \item "iterazioni massime LOS": \emph{intero}
+	  \item "iterazioni peggiorative massime": \emph{intero}
+	  \item "iterazioni massime STM": \emph{intero}
+	  \item "tenure base ADD": \emph{intero}
+	  \item "tenure base REMOVE": \emph{intero}
+	\end{itemize}
+
+\input{src/programma/CasiUso.tex}

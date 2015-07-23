@@ -1,0 +1,7 @@
+*svn/
+*.so
+*.d
+*.o
+*docs/
+*doc/
+*.html

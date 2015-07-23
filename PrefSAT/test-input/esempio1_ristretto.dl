@@ -1,0 +1,12 @@
+arg(n09).
+arg(n10).
+arg(n11).
+arg(n12).
+arg(n13).
+arg(n14).
+att(n13,n14).
+att(n14,n13).
+att(n12,n09).
+att(n12,n10).
+att(n10,n11).
+att(n11,n12).

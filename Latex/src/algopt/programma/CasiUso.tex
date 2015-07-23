@@ -1,0 +1,99 @@
+\section{Casi d'uso}
+%% CASO USO A - ANALISI SINGOLA ISTANZA
+\begin{usecase}
+	\addtitle{Caso d'uso A}{Analisi di singola istanza} 
+	\addfield{Scope:}{System-wide} %the system under design
+	%Level: "user-goal" or "subfunction"
+	\addfield{Goal:}{ottenere una risoluzione metaeuristica di un certo problema UCARPP.}
+	\addfield{Attore primario:}{l'utente finale}
+	%Stakeholders and Interests: Who cares about this use case and what do they want?
+	%\additemizedfield{Stakeholders and Interests:}{
+	%	\item Stakeholder 1 name: his interests
+	%}
+	\addfield{Precondizioni:}{
+		\begin{itemize}
+		  \item un file locale nel quale sia correttamente espressa la configurazione
+		  di un problema.
+		\end{itemize}}
+	\addfield{Postcondizioni:}{un report corretto \footnote{una struttura dati contenente:
+		\begin{itemize}
+		  \item profitto totale
+		  \item costo totale, come somma dei tempi utilizzati dai veicoli
+		  \item lista di $K$ \emph{percorsi}, ognuno descritto come:
+		  \begin{itemize}
+		     \item lista dei lati percorsi, nella forma \; $(v_1,\,v_i)\; (v_i,\,v_j)\; (v_i,\,v_j)\; \ldots \; (v_m,\,v_1)$
+		     \item lista dei lati serviti, quindi un sottoinsieme della lista precedente, nel medesimo formato
+		     \item profitto del percorso
+		     \item costo temporale del percorso
+		     \item domanda totale servita nel percorso
+		     \end{itemize} 
+		\end{itemize}},
+		il cui formato è adattato a quello utilizzato nelle benchmark.}
+	
+	\addscenario{Scenario principale di successo:}{
+		\item l'utente chiama il programma indicando quale problema vuole risolvere con quanti veicoli.
+		\item il programma effettua la sua analisi e restituisce un report testuale di quanto trovato.
+	}
+	\addscenario{Estensioni:}{
+		\item[1.a] la sinopsi è invalida:
+			\begin{enumerate}
+			\item[1.] il sistema informa in modo generale dell'errore
+			\item[2.] il programma termina senza successo.
+			\end{enumerate}
+		\item[1.b] il file indicato non è presente o è in un formato non valido:
+			\begin{enumerate}
+			\item[1.] il sistema informa del file non trovato
+			\item[2.] il programma termina senza successo.
+			\end{enumerate}
+		\item[2.b] è implementato il modulo Matlab/Octave:
+			\begin{enumerate}
+			\item[1.] viene scritto uno script per graficare la serie storica della
+			funzione obiettivo e della selezione delle mosse.
+			\end{enumerate}
+	}
+\end{usecase}
+
+%% CASO USO B - ANALISI STATISTICA
+% \begin{usecase}
+% \addtitle{Caso d'uso B}{Analisi statistica} 
+% \addfield{Scope:}{system-wide}
+% \addfield{Goal:}{ottenere statistiche sulle prestazioni dell'algoritmo su tanti problemi UCARPP.}
+% \addfield{Attore primario:}{i designer della metaeuristica.}
+% \addfield{Precondizioni:}{
+% 	\begin{itemize}
+% 	  \item una directory del filesystem realmente esistente.
+% 	  \item un intero $K$ tra i valori {2,3,4}.
+% 	\end{itemize}}
+% \addfield{Postcondizioni:}{un report statistico corretto 
+% 	\footnote{una struttura dati contenente:
+% 		\begin{itemize}
+% 		  \item i due vettori degli scostamenti relativi dalle due benchmark
+% 		  \item i due massimi dei suddetti vettori
+% 		  \item i due minimi dei suddetti vettori
+% 		  \item i due valori medi dei suddetti vettori
+% 		  \item le due varianze dei suddetti vettori
+% 		\end{itemize}},
+% 		il cui formato è adattato a quello utilizzato nelle benchmark.}
+% \addscenario{Scenario principale di successo:}{
+% 	\item l'utente chiama il programma indicando la directory dove ricercare le istanze di problema e 
+% 		  con quanti veicoli risolverle.
+% 	\item su ciascun file presente nella directory viene eseguito il caso d'uso A. 
+% 	\item il programma termina le analisi e restituisce un rapporto testuale di quanto eseguito.
+% }
+% \addscenario{Estensioni:}{
+% 	\item[1.a] la sinopsi è invalida:
+% 		\begin{enumerate}
+% 		\item[1.] il sistema informa in modo generale dell'errore
+% 		\item[2.] il programma termina senza successo.
+% 		\end{enumerate}
+% 	\item[2.a] almeno un file indicato non è presente:
+% 		\begin{enumerate}
+% 		\item[1.] il sistema informa del file non trovato
+% 		\item[2.] il programma termina senza successo.
+% 		\end{enumerate}
+% 	\item[3.a] è implementato il modulo Matlab:
+% 		\begin{enumerate}
+% 		\item[1.] viene graficato un istogramma degli scostamenti relativi dalle benchmark.
+% 		\end{enumerate}
+% 	}
+% \end{usecase}

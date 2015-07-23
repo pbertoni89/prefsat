@@ -1,0 +1,40 @@
+\begin{algorithm}
+	 \SetAlgoLined
+	 \KwData{$J_k,\; P_k$ feasible}
+	 \KwResult{$J_k^\prime,\; P_k^\prime$ feasible}
+	 \tcc{insieme degli archi del percorso $k$}
+	 \ForEach{$e_{ij}\in P_k$}{
+	 	\tcc{insieme degli archi doppi costruiti sul nodo sinistro unito a quelli sul nodo destro}
+	 	\ForEach{$e\in \{ e_{il}\notin P_k\}\cup\{ e_{jm}\notin P_k\}$}{
+	 		$P_k^\prime \leftarrow P_k \cup \{2\times e\}$\; %\setminus \{e_{ij}\}$\;
+	 		\If {\upshape{isTQok($P_k^\prime$)}} {
+				\tcc{è tutto fuori da tabu}
+				\If {\upshape{\bfnot \,\,isTaboo($e_{ij},\,k$)\,\, \bfand \,\, \bfnot\,\,isTaboo($e,\,k$)}} {
+					\tcc{la valutazione è pura o smart, a scelta}
+					$J_k\prime \leftarrow$ evaluate($P_k^\prime$)\;
+
+					\If {$J_k\prime > J_k$} {
+						$P_k \leftarrow P_k^\prime$\;
+						$J_k \leftarrow J_k\prime$\;
+					}
+				}
+	 		}
+	 	}
+	 	\tcc{insieme degli archi triangolanti sui nodi nuovi e vecchi}
+	 	\ForEach{$(e_{il},e_{jl}) \in E$}{
+	 		$P_k^\prime \leftarrow P_k \cup \{e_{il}, e_{jl}\} \setminus \{e_{ij}\}$\;
+	 		\If {\upshape{isTQok($P_k^\prime$)}} {
+				\If {\upshape{\bfnot \,\,isTaboo($e_{ij},\,k$)\,\, \bfand \,\, \bfnot\,\,isTaboo($e_{il},\,k$) \,\, \bfnot\,\,isTaboo($e_{jl},\,k$)}} {
+					$J_k\prime \leftarrow$ evaluate($P_k^\prime$)\;
+
+					\If {$J_k\prime > J_k$} {
+
+						$P_k \leftarrow P_k^\prime$\;
+						$J_k \leftarrow J_k\prime$\;
+					}
+				}
+	 		}
+	 	}
+	}
+	\caption{Mossa ADD.}
+	\end{algorithm}

@@ -1,0 +1,17 @@
+\BOOKMARK [0][-]{section*.1}{Indice}{}% 1
+\BOOKMARK [0][-]{chapter.1}{Modellizzazione del problema}{}% 2
+\BOOKMARK [1][-]{section.1.1}{Strutture dati}{chapter.1}% 3
+\BOOKMARK [0][-]{chapter.2}{Pseudocodice del programma}{}% 4
+\BOOKMARK [0][-]{chapter.3}{Ottimizzazione del codice}{}% 5
+\BOOKMARK [1][-]{section.3.1}{Miglioramenti suggeriti}{chapter.3}% 6
+\BOOKMARK [1][-]{section.3.2}{Miglioramenti personali}{chapter.3}% 7
+\BOOKMARK [0][-]{chapter.4}{Analisi computazionale}{}% 8
+\BOOKMARK [1][-]{section.4.1}{Individuazione dei blocchi procedurali d'interesse}{chapter.4}% 9
+\BOOKMARK [1][-]{section.4.2}{Verifica di correttezza: gli oracoli}{chapter.4}% 10
+\BOOKMARK [1][-]{section.4.3}{Metodo di misura del tempo}{chapter.4}% 11
+\BOOKMARK [1][-]{section.4.4}{Configurazione del calcolatore}{chapter.4}% 12
+\BOOKMARK [1][-]{section.4.5}{Un generatore di problemi}{chapter.4}% 13
+\BOOKMARK [1][-]{section.4.6}{Benchmarks sui test generati}{chapter.4}% 14
+\BOOKMARK [1][-]{section.4.7}{Considerazioni finali}{chapter.4}% 15
+\BOOKMARK [0][-]{chapter.5}{Varie ed eventuali}{}% 16
+\BOOKMARK [1][-]{section.5.1}{Documentazione del codice}{chapter.5}% 17

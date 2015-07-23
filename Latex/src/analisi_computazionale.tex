@@ -1,0 +1,146 @@
+\section{Individuazione dei blocchi procedurali d'interesse}
+La complessità temporale di \textbf{Pref} dipende fortemente, oltre che dalle
+dimensioni del problema, dal numero di chiamate ai seguenti algoritmi:
+\begin{itemize}
+  \item \emph{Grounded}
+  \item \emph{SCCSEQ}
+  \item \emph{Boundcond}
+  \item \emph{PrefSAT}
+  \item \emph{Pref} stesso.
+\end{itemize}
+L'analisi quindi è stata strutturata per fornire due indici:
+\begin{itemize}
+  \item $\eta$ - una misura del tempo ``\emph{tic-toc}'' per ciascuna chiamata a
+  una delle suddette procedure, più il tempo totale di esecuzione del programma;
+  \item $\xi$ - il numero di chiamate a ciascuna procedura, nell'arco
+  dell'intera esecuzione.
+\end{itemize}
+Mentre il primo indice è atto a relazione la dimensione del problema al tempo in
+sè, ed è fortemente mediato dalle prestazioni della macchina di esecuzione, il
+secondo è una misura molto buona delle differenze tra la versione \emph{base} di
+\textbf{Pref} e la versione \emph{improved}, implementazione dello studio
+presentato nel capitolo \ref{chap:opt}. Chiamando il programma sullo stesso
+problema nelle due modalità, infatti, è rapidamente visibile il risparmio in
+termini di chiamate introdotto dalle ottimizzazioni. Si noti che \emph{SCCSEQ}
+non è stato introdotto nell'indice $\xi$ siccome non è sottoposto ad
+ottimizzazioni, pertanto il numero delle sue chiamate è sempre pari a quello
+relativo a \emph{Pref}.
+
+ Entrambi gli indici sono sempre restituiti dal programma
+sullo standard output.
+
+\section{Verifica di correttezza: gli oracoli} \label{sec:oracles}
+Per testare innanzitutto i requisiti funzionali ci si è avvalsi dell'oracolo
+\emph{ASPARTIX} disponibile come web service dall'\emph{URL}
+\url{http://rull.dbai.tuwien.ac.at:8080/ASPARTIX}. Si noti che la rete di
+Facoltà dovrebbe bloccare la porta 8080. L'applicazione oracolo, oltre a
+confermare gli output dei tre esempi forniti insieme alle specifiche, ha 
+validato anche altri test, generati secondo il metodo descritto in \ref{sec:graphgen}.
+
+\section{Metodo di misura del tempo}
+La scelta è ricaduta sulla libreria \textbf{chrono} del $C_{++}$, che
+costituisce anche un \emph{subnamespace} \emph{std::chrono}.
+I concetti principali implementati sono tre:
+\begin{itemize}
+  \item le \emph{durate temporali} misurano lassi di tempo, fino all'ordine dei
+  millisecondi. In questa libreria sono rappresentate come oggetti della classe
+  template \emph{duration}, che accoppiano una rappresentazione di conto e una
+  precisione di periodo (\emph{e.g.}, 10 millisecondi ha 10 come
+  rappresentazione di conto e 'millisecondi' come precisione di periodo.)
+  \item gli \emph{istanti temporali} sono riferimenti a dei punti precisi
+  sull'asse temporale, espressi come una \emph{duration} da un punto fissato per
+  convenzione.
+  \item un \emph{clock} è un framework collegante un \emph{istante temporale} a
+  un'istante del mondo reale.
+\end{itemize}
+La libreria offre almeno tre clocks diversi per esprimere il tempo corrente come
+un valore numerico: \emph{system\_clock}, \emph{steady\_clock} e
+\emph{high\_resolution\_clock}, a miglior precisione e che sarà per questo
+utilizzato nelle benchmark.
+
+Si noti che per utilizzare \textbf{chrono} è obbligatoria una compilazione
+conforme allo standard $C_{++}11$.
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Configurazione del calcolatore}
+Le benchmarks sono state eseguite su un notebook così caratterizzato:
+\begin{itemize}
+  \item \textbf{OS} Linux Ubuntu 10.04 con istruzioni a 32 bit
+  \item \textbf{CPU} Intel Pentium(R) Dual-Core CPU T4200 , clock 2.00GHz e
+  tecnologia \emph{Hyper Threading}
+  \item \textbf{RAM} 4GB DDR3, di cui 3 disponibili all'utente.
+  \item \textbf{Compiler} Gnu C Compiler (gcc) in versione $C^{++}11$ e
+  ottimizzato.
+\end{itemize}
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Un generatore di problemi} \label{sec:graphgen}
+Le tre istanze di prova allegate alle specifiche del problema vengono risolte in
+un tempo dell'ordine dei 10 millisecondi, con una varianza elevata, e quindi non
+sono utilizzabili per una profilazione consistente della complessità temporale.
+Per generare grafi più onerosi è stato implementato un piccolo applicativo
+indipendente, che libera l'analista dallo sforzo di pensare e codificare
+argumentation framework anche di migliaia di nodi o archi.
+I parametri richiesti sono:
+\begin{itemize}
+  \item numero $N$ di \emph{Arguments}, ovvero nodi del grafo. Verranno
+  automaticamente denominati $n_i,\;\; i\in[1,N]$.
+  \item il numero massimo $\overline{A}$ di \emph{Arguments} che attaccano o
+  sono attaccati da ogni \emph{Argument}. Ricordando che un grafo orientato di $N$
+  nodi completamente magliato è dotato di $N(N-1)$ archi, il valore
+  $\frac{N(N-1)}{N} = N-1$ costituisce un upperbound per $\overline{A}$. Un
+  grafo denso ``a metà'' è chiaramente caratterizzato da un $\overline{A} =
+  \frac{N}{2}$.
+  \item nome del file in formato \emph{dl} dove il \emph{framework} verrà
+  salvato.
+  \item $\{graph, dot, nograph\}$ per indicare se si desidera anche un
+  output grafico in formato jpg, rappresentante il grafo. È qui utilizzato, come
+  nella documentazione del sorgente scritta con \textbf{Doxygen}, il linguaggio
+  \textbf{dot}. Nel caso ``dot'' verrà scritto solo il file dot senza generar
+  l'immagine.
+\end{itemize}
+
+Applicativo \textbf{graphGenerator} e relativo sorgente vengono allegati al
+progetto finale. Vengono inoltre forniti degli esempi casuali generati con
+esso, utilizzati nei test che saranno presentati a breve. I loro nomi rispettano
+la sintassi $N$\emph{\_}$\overline{A}$\emph{trial.dl}, dove trial è una lettera
+$a,b,\ldots n$ che distingua i problemi di uguale dimensione generati.
+È stato deciso inizialmente di esplorare gli ordini di grandezza di $N$ da $10$ a $10^4$, ma, come si vedrà,
+già il passaggio da $10^2$ a $10^3$ si mostrerà proibitivo.
+
+ Se si suppone una complessità $O(1)$
+per elaborare ciascun nodo, esclusa dalla chiamata la gravosissima elaborazione dell'immagine, la complessità di graphGenerator è
+chiaramente $O(N\overline{A})$. Lo spazio richiesto per la memorizzazione dei
+grafi si comporta anch'esso linearmente rispetto alle singole dimensioni $N,
+\overline{A}$, come suggerito in figura \ref{fig:filesize}.
+
+\singlefig{dl_filesize.png}{Dimensione su disco delle istanze
+del problema, al variare di $N$ (ascisse) e con due $\overline{A}$ fissate
+relativamente a $N$.}{12.0}{filesize}
+%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Benchmarks sui test generati}
+\textbf{Note:} un trial contrassegnato dal ``$^+$'' rappresenta l'esecuzione migliorata su quel grafo.
+ Nella parte destra della tabella, per non appesantire la lettura sono stati omessi
+i valori invariati tra ciascuna coppia di esecuzioni. I tempi sono espressi in millisecondi.
+\input{src/table_benchmarks.tex}
+
+\section{Considerazioni finali}
+In tabella sono stati riportati solo i tempi totali e non alle singole chiamate,
+ma si registra che il tempo utilizzato da \emph{PrefSAT} domina fino al 90\%
+della durata totale di ogni esecuzione. È altresì la più onerosa in termini di
+memoria principale allocata, e siccome è codice scritto da terzi si sospetta che
+presenti varie memory leak. Si può dunque affermare che l'ottimizzazione più rilevante di ogni altra sia quella che
+eviti la chiamata al problema SAT, peraltro notorialmente \emph{NP-hard}.
+
+Moltissime volte, mentre \emph{Pref} gira in versione migliorata, viene risparmiata la chiamata a \emph{Boundcond}
+poichè il relativo \emph{SCC} non ha nessun padre. Questo è possibile che sia legato alla generazione puramente pseudocasuale
+dei grafi, che non cerca di costruire nessun percorso arbitrariamente lungo sui nodi, ma si limita a computare un certo numero
+di probabilità di collegamento. Versioni migliorate della struttura di test potrebbero incorporare un'euristica della ``connessione''
+del grafo generato; il trascurabile vantaggio del miglioramento su \emph{Boundcond} non ne giustifica per ora lo sforzo.
+
+Si noti inoltre la grande differenza nel numero di chiamate, tra tre istanze note come \emph{esempio1}, \emph{esempio2} e \emph{esempio3},
+e invece i grafi generati casualmente. È evidente che argumentation framework strutturati senza una logica apparente rimangono alquanto
+sconnessi e, oltre a non avere interesse reale nella loro risoluzione, ne hanno ben poco dal punto di vista dell'indice $\xi$. Qualora fossero
+disponibili istanze di grafi di dimensioni considerevoli e ben strutturati, saremo lieti di incorporarli in una seconda e più informativa versione 
+del testing. 
+
+Parimenti si può dire che le istanze generate casualmente, dato il numero sempre minimo di chiamate alle varie procedure, costituiscono una sorta
+di \emph{lower bound} sulle prestazioni di \emph{Pref} in generale.

@@ -1,0 +1,67 @@
+%% utilitàs scritte principalmente da Pat. Considerare solo quelle usate nel progetto.
+%% non tutte quelle scritte sono garantite funzionanti, quelle usate lo sono sicuramente
+% nella doc di questo file è principalmente riportata la sequenza ordinata degli argomenti
+\ProvidesPackage{patlib}
+
+% Prende 2 argomenti: (label, equazione)
+\newcommand{\myeq}[2]
+	{\begin{equation}
+		\label{eq:#1}
+		#2
+	\end{equation}}
+% tale e quale ai tag usati da max. (path, label, caption)
+\newcommand{\maxfig}[3]
+	{\begin{figure}[h]
+		\centering
+		\includegraphics[scale=0.5]{images/#1}
+		\caption{#3}
+		\label{fig:#2}
+	\end{figure}}
+% roba mia della tesi (path, caption, width, label)
+\newcommand{\singlefig}[4]
+	{\begin{figure}[H] 
+	 	\begin{center}
+			 \begin{tabular}{c @{\hspace{1em}} c}	
+				 \includegraphics[width = #3 cm]{images/#1}
+				 %\captionsetup{singlelinecheck=off}
+			      %\caption[.]{#2}
+			 \end{tabular}
+		 \end{center}
+	 \caption{#2} 
+	 \label{fig:#4}
+ 	\end{figure}}
+% SENZA CAPTIONS NE' LABEL.  (path, width)
+\newcommand{\purefig}[2] 
+	{\begin{figure}[hb] 
+	 	\begin{center}
+			 \begin{tabular}{c @{\hspace{1em}} c}	
+				 \includegraphics[width = #2 cm]{images/#1}
+			 \end{tabular}
+		 \end{center}
+ 	\end{figure}}
+%%%%% SISTEMARE
+\newcommand{\doublefig}[4]
+	{\begin{figure}[tbpa] 
+		\begin{center}
+			\begin{tabular}{c @{\hspace{1em}} c}
+				\includegraphics[width=0.3cm]{figure/#1} & \\
+				\includegraphics[width=0.3cm]{figure/#3} &
+				(a) & (b)
+			\end{tabular}
+		\end{center}
+		\caption{Esempio carino. (a) #2 (b) #4} 
+	\label{fig:example-carino}
+	\end{figure}}
+
+
+\newcommand{\rtm}
+{ \textsuperscript{\textregistered} }
+
+\newcommand\comm[1]{\begin{comment}#1\end{comment}}
+%%%
+\newcommand\mathbi[1]{\textbf{\em #1}}
+
+\newcommand\bfnot{\upshape{\textbf{not}}}
+\newcommand\bfor{\upshape{\textbf{or}}}
+\newcommand\bfand{\upshape{\textbf{and}}}
+

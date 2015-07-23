@@ -1,0 +1,24 @@
+\begin{algorithm}
+	 \SetAlgoLined
+	 \KwData{$J_k,\; P_k$ feasible}
+	 \KwResult{$J_k^\prime,\; P_k^\prime$ feasible}
+	 \tcc{insieme delle combinazioni senza ripetizione degli archi non contigui del percorso $k$}
+	 \ForEach{$(e_{ij},e_{kl})\in P_k \;|\; j\neq l,\,i\neq k,\,e_{ij}\neq e_{kl}\;$}{
+ 		\tcc{è tutto fuori da tabu, oppure è tutto concesso dai criteri aspirazione}
+ 		\If {\upshape{\bfnot\,\,isTaboo($e_{ij},\,k$)\,\,\bfand \,\,\bfnot\,\,isTaboo($e_{kl},\,k$)\,\,\bfand\,\,
+ 					  \bfnot\,\,isTaboo($e_{il},\,k$)\,\,\bfand\,\,\bfnot\,\,isTaboo($e_{jk},\,k$)\,\,\bfand \\
+					  \,\,isPathConnected($P_k^\prime$)}} {
+ 			$P_k^\prime \leftarrow P_k \cup \{e_{il},e_{jk}\} \setminus \{e_{ij},e_{kl}\}$\;
+ 			\If {\upshape{isTQok($P_k^\prime$)}} {
+				\tcc{la valutazione è pura o smart, a scelta}
+				$J_k\prime \leftarrow$ evaluate($P_k^\prime$)\;
+
+				\If {$J_k\prime > J_k$} {
+					$P_k \leftarrow P_k^\prime$\;
+					$J_k \leftarrow J_k\prime$\;
+				}
+			}
+ 		}
+	}
+	\caption{Mossa SWAP.}
+	\end{algorithm}

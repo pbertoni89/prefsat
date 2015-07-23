@@ -1,0 +1,14 @@
+arg(S1).
+arg(S2).
+arg(S3).
+arg(S4).
+arg(S5).
+arg(S6).
+arg(S7).
+att(S1,S3).
+att(S1,S4).
+att(S1,S5).
+att(S3,S6).
+att(S6,S7).
+att(S5,S7).
+att(S2,S5).

@@ -1,0 +1,140 @@
+L'algoritmo proposto si basa fondamentalmente sulla tecnica della Tabu Search, caratterizzata dalla capacità di continuare la ricerca oltre i minimi locali.
+Innanzitutto, per poter sfuggire ai suddetti minimi, che arresterebbero un
+algoritmo puramente migliorativo, la Tabu Search consente mosse peggiorative.
+Per evitare di ricadervi in breve tempo, inoltre, un elenco denominato
+\emph{Tabu List} impedisce temporaneamente di effettuare mosse recentemente già eseguite.
+Caratteristica basilare della Tabu Search è quindi l'uso sistematico della
+memoria: per aumentare l'efficacia del processo di ricerca, viene tenuta traccia non solo delle informazioni locali 
+(come il valore corrente della funzione obiettivo), ma anche di alcune informazioni relative all'itinerario percorso. 
+Tali informazioni vengono impiegate per guidare la mossa dalla soluzione corrente alla soluzione successiva, 
+da scegliersi all'interno del suo \emph{neighbourhood}.
+
+\section{Definizioni e abbreviazioni}
+	Si riportano qui termini di uso frequente nella presentazione dell'elaborato. All'inizio di paragrafi e sezioni è possibile trovarli
+	in carattere italico per riportare l'attenzione del lettore alla formalità, dopodichè saranno in carattere normale, per non annoiare la lettura.
+	\begin{itemize}
+	  \item \emph{Grafo}: sovrascrivendo la formale terminologia matematica, con \emph{grafo} ci si riferirà spesso al caso
+	  particolare dell'elaborato, quindi a un grafo indiretto di $N$ nodi, completamente magliato, ove un nodo funge da deposito, ove vige
+	  la disuguaglianza triangolare sui tempi, ove gli archi oltre a un costo di tempo $t$ possiedono una domanda $d$ e un profitto $p$.
+	  \item \emph{Problema}: un oggetto astratto comprendente un \emph{grafo}, un vincolo sul tempo massimo $T$, uno sulla capacità $Q$, e 
+	  una quantità fissata di veicoli $K$.
+	  \item \emph{Soluzione}: la coppia $(\vec{\vec{x}},\,\vec{\vec{g}})$, rappresentante il numero di attraversamenti e/o raccolti
+	  		degli archi. Si noti che il secondo indice delle matrici deriva dall'avere generalmente $K>1$. Per brevità però ci si riferirà 
+	  		spesso alla soluzione come semplicemente $(x,\,g)$.
+	  \item \emph{Soluzione feasible}: una soluzione che rispetti tutti i vincoli esposti nella modellizzazione.
+	  \item \emph{Soluzione} $TQ_{OK}$: una definizione di feasibility sui soli vincoli di tempo e carico. Si applica anche a singole mosse.
+	  \item $\tau^k$ indica il tempo attualmente occupato dal $k$-esimo veicolo nel suo tragitto. È sempre pari a $\sum_{(i,j)\in E}x_{ij}^kt_{ij}$
+	  \item $\theta^k$ indica la domanda attualmente servita dal $k$-esimo veicolo nel suo raccolto. È sempre pari a $\sum_{(i,j)\in E}g_{ij}^kd_{ij}$
+	  \item \emph{Criterio di ottimalità} funzione utilizzata dall'euristica per perseguire la \emph{funzione obiettivo}. A seconda della logica
+	  		che verrà adottata durante l'elaborazione, è possibile che il criterio non sempre massimizzi \emph{in senso assoluto} $f(g)$.
+	  		Si rimanda alla sottosezione \ref{subsec:eval}.  
+	  \item \emph{Intorno/Neighbourhood}: sottoinsieme dello spazio di
+	  	soluzioni indotto da
+	  		\begin{itemize}
+	  		  \item la soluzione attuale del problema
+	  		  \item una precisa \emph{forma} dell'intorno tra un insieme finito di forme.
+	  		  \item ulteriori costraints come la \emph{Taboo list}.
+	  		\end{itemize}
+	  		Questa modellizzazione verrà dettagliatamente descritta nelle sue
+	  		possibili istanze nella sezione \ref{subsec:neighbourhoods}.
+	  \item \emph{Mossa} azione in un preciso intorno volta a massimizzare un \emph{criterio di ottimalità}.
+	  \item \emph{Percorso} $P_k$: ciclo sul grafo effettuato dal $k$-esimo
+	  veicolo, che inizia e termina nel deposito ed è incluso in una soluzione feasible.
+	  \item \emph{Arco doppio}: un arco percorso due volte, avanti e indietro.
+	  \item \emph{Taboo Search}: tecnica metaeuristica ben nota in letteratura, per
+	  brevità \emph{TS}.
+	  \item \emph{Taboo List}: struttura dati chiave della \emph{TS}, per brevità
+	  \emph{TL}.
+	\end{itemize}
+	
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Note preliminari}
+\subsection{Magliatura completa del grafo} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Prevedendo di ricevere in input istanze di grafi non completamente magliati, per conservare le specifiche del problema \emph{UCARPP} li
+	si ha completati con i cammini minimi forniti dall'algoritmo di Dijkstra. Quanto detto è valido per i soli costi di tempo del grafo;
+	gli archi non forniti in input, ovvero tutti e soli quelli a cui viene assegnato il cammino minimo, vengono creati con profitto e domanda nulli.
+\subsection{Criteri di aspirazione} % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Non sono stati previsti al momento criteri di aspirazione per la Taboo List.	
+	
+\subsection{Il \emph{valutatore}, un criterio per la pesatura degli archi} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\label{subsec:eval}
+	È un modulo funzionale che, noti $(t_{ij},\,p_{ij},\,d_{ij},\,\tau^k,\,\theta^k,\,T,\,Q)$ restituisce uno scalare $w_{ij}^k$ tanto più vicino a $0^+$ 
+	quanto l'inclusione di $e_{ij}$ nel $k$ cammino iniziale è sconveniente e tanto tendente a $\infty^+$ quanto invece è interessante. 
+	Il metodo lavora in differenti modalità, gestite da un \emph{flag} settato a livello superiore.
+	\begin{itemize}
+	  \item se la modalità è \emph{pure}, viene meramente restituito il profitto $p_{ij}$ associato all'arco. Questo serve a ricercare archi che migliorino
+	  	    la funzione obiettivo in senso stretto, non preoccupandosi del carico di questi sui vincoli di tempo e di capacità.
+	  \item se la modalità è \emph{smart}, il profitto viene rapportato ai costi di attraversamento e servizio ad esso connessi, 
+		  	sperando di effettuare delle scelte più lungimiranti rispetto ai vincoli di tempo e capacità. Definendo:
+			$$w_{ij}^t \triangleq \frac{p_{ij}}{t_{ij}},\;\;\;\; w_{ij}^d \triangleq \frac{p_{ij}}{d_{ij}},\;\;\;\; 
+			\bar{\tau}^k \triangleq T-\tau^k,\;\;\;\; \bar{\theta}^k \triangleq Q-\theta^k$$
+			si avrà che, se $\bar{\tau}^k > 0\; \wedge\; \bar{\theta}^k > 0$, ovvero l'arco è $TQ_{OK}$, il peso è dato da
+			$$w_{ij}^k \triangleq w_{ij}^t + w_{ij}^d$$
+	  \item se la modalità è \emph{wise}, la modalità \emph{smart} viene estesa, aggiungendo un peso alle \emph{risorse} libere, cioè effettivamente possedute:
+	  		le variabili $\bar{\tau}^k$ e $\bar{\theta}^k$. Sempre in caso $TQ_{OK}$, il peso è dato da
+			$$w_{ij}^k \triangleq w_{ij}^t \bar{\tau}^k + w_{ij}^d \bar{\theta}^k$$  		
+	\end{itemize}
+	\subsubsection{Archi non profittevoli}
+	Per costruzione, sono tutti quegli archi non inclusi nel problema iniziale (e quindi magliati con Dijkstra), oltre ad eventuali archi del problema che
+	abbiano $p$ e $d$ nulli. Per ipotesi semplificativa non sono ammessi (nè d'altronde presenti nelle istanze di test) dei grafi con archi aventi \emph{un solo}
+	valore nullo di questi due. Il criterio di pesatura degli archi non profittevoli ricalca quello generico per i profittevoli, ma è naturalmente limitato al solo $t$
+	dell'arco e al $\tau^k$ del veicolo.
+	
+\subsection{Euristica costruttiva} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\label{subsec:eurconstr}
+	È un algoritmo inesatto che, dato il \emph{problema} in ingresso e una \emph{soluzione} vuota, garantisce come postcondizione la
+	generazione di una soluzione $TQ_{OK}$ che serva di partenza al resto dell'algoritmo.
+	Le versioni ora presentate non sono state progettate come \emph{state-of-art} e potranno essere affiancate o sostituite da
+	costruttive migliori e più complesse.
+\begin{itemize}
+ \item Simple: I $K$ cammini iniziali selezionati sono tutti dei diversi \emph{archi doppi}, tutti sicuramente serviti, colleganti il nodo deposito a altrettanti $K$ vertici. 
+  	La selezione tra i $N-1$ candidati avviene cercando di limitare l'intrinseca caratteristica \emph{greedy} della fase costruttiva: il criterio valutatore è quindi in questa
+  	fase richiamato in modalità \emph{wise}, descritta precedentemente in \ref{subsec:eval}. Questa euristica è estremamente povera, in quanto si preoccupa principalmente di rispettare il vincolo $TQ_{OK}$ del problema. È d'altronde
+	   veramente improbabile che tale vincolo sia sfiorato in cammini composti da archi doppi.
+  	\begin{figure}[H] 
+	 	\begin{center}\includegraphics[width=4cm]{./images/costruttiva.png} \end{center}
+	 \caption{Un'esecuzione tipica dell'euristica costruttiva.} \label{fig:costruttiva}
+ 	\end{figure}
+ \item Simple Random: anche in questo caso si identificano archi doppi a partire dal deposito, ma non viene preso in considerazione il valutatore, con selezione puramente casuale degli archi doppi.
+\end{itemize}
+
+\subsection{Note sull'interazione tra i veicoli} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\label{subsec:vehicleinter}
+	I veicoli sono \emph{concorrenti} e non \emph{competitori}: si assume che appartengano ad un unico ente che abbia il potere decisionale totale su essi
+	e la volontà di ottimizzare il profitto totale, senza focalizzarsi su quello del singolo veicolo. Il problema dunque \emph{non} è di \emph{teoria dei giochi}
+	e i veicoli non hanno bisogno di influenzarsi a vicenda. La logica seguita è pertanto ``fai il meglio con ciò che hai a disposizione'', ovvero con la disponibilità
+	di ogni arco ad essere ancora servito o meno. In questo senso, l'unica struttura dati condivisa tra veicoli è $g$ della soluzione.
+	Ulteriori considerazioni saranno descritte nel livello \emph{STM}.
+	
+	Una tecnica estremamente \emph{brute} e \emph{greedy} vorrebbe una sequenzialità totale tra le $k$ euristiche relative ai veicoli, portando
+	di fatto a un primo percorso molto buono e agli ultimi veramente scarsi. Un'altra molto semplice deciderebbe \emph{prima} tutti gli archi
+	attraversati nel problema e successivamente il sottoinsieme degli archi raccolti, imponendo enormi costraints peggiorativi sull'ottimo euristico.
+	L'approccio seguito è quindi una sequenzialità ristretta alla singola iterazione \emph{i}-esima dell'algoritmo, un \emph{round robin} su quale
+	veicolo debba effettuare l'\emph{i}-esima mossa.
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Vista generale sull'algoritmo: un approccio bottom-up}
+	La progettazione è incentrata sull'incapsulamento di più layer di logica, da quello più essenziale (ricerca di un ottimo locale)
+	al livello metaeuristico più astratto. Sono stati individuati tre macrolivelli dell'algoritmo:
+	\begin{itemize}
+	  \item \textbf{Local optimum search}(\emph{LOS}) euristica semplice per selezionare il \emph{best improvement}
+	  di un dato intorno, date le restrizioni imposte da \emph{STM}. Più avanti si vedrà che il \emph{best improvement}
+	  può benissimo essere peggiorativo.
+	  \item \textbf{Short-term memory}(\emph{STM}) metaeuristica della \emph{TS} che si incarica di intensificare la ricerca di soluzioni 
+	  in una direzione, pilotando opportunamente il livello \emph{LOS}. 
+	  Custodisce inoltre la Taboo List, memoria a breve termine delle mosse necessaria per permettere alla funzione obiettivo di peggiorare. 
+	  \item \textbf{Long-term memory}(\emph{LTM}) metaeuristica della \emph{TS} che si incarica di pilotare il livello \emph{STM}, 
+	  per diversificare la ricerca dell'ottimo in altre direzioni nello spazio delle soluzioni.
+	\end{itemize}
+	\begin{figure}[H] 
+	 	\begin{center}
+	 	\includegraphics[width=16.7cm]{./images/alg-flow.pdf}
+	 	\end{center}
+	 	\caption{Diagramma di attività del programma implementato.}
+	 	\label{fig:algFlow}
+ 	\end{figure}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\input{./src/algoritmo/LTM.tex}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\input{./src/algoritmo/STM.tex}
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\input{./src/algoritmo/LOS.tex}

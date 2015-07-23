@@ -1,0 +1,140 @@
+\section{Elenco delle variabili e dei parametri}
+\begin{table}[h]
+	\begin{tabular}{|c|c|c|}
+		\hline
+			\textbf{variabile} & \textbf{dominio} & \textbf{descrizione}\\
+		\hline
+			$x_{ij}^{k}$ & $\mathbb{Z}^+$ & indica se $e_{ij}$ viene o meno attraversato dal veicolo $k$ \\
+		\hline
+			$g_{ij}^{k}$ & $\mathbb{B}$ & indica se $e_{ij}$ viene o meno raccolto dal veicolo $k$\\
+		\hline
+			$u_S^{k}$ & $\mathbb{B}$ & indica se l'insieme $S$ di nodi è collegato con il complementare ($V\setminus{S}$)\\
+		\hline
+			$y_S^{k}$ & $\mathbb{B}$ & indica la presenza di un ciclo nel insieme $S$\\
+		\hline
+			$Q$ & $\mathbb{Z}_{>0}$ & capacità massima di ogni camion \\
+		\hline
+			$T_{max}$ & $\mathbb{Z}_{>0}$& tempo massimo per la percorrenza \\
+		\hline
+			$K$ & $ \mathbb{N}_{>0}$ & numero di veicoli per il problema\\
+		\hline
+			$t_{ij}$ & $\mathbb{Z}^+$ & tempo richiesto per attraversare $e_{ij}$\\
+		\hline
+			$d_{ij}$ & $\mathbb{Z}^+$ & domanda richiesta da $e_{ij}$\\
+		\hline
+			$p_{ij}$ & $\mathbb{R}^+$ & profitto offerto da $e_{ij}$\\
+		\hline
+	\end{tabular}
+\end{table}
+\section{Definizioni di insiemi e operatori}
+\begin{itemize}
+  \item $V$: contiene tutti i nodi contenuti nel grafo, deposito $v_1$ compreso.
+  \item $E$: rappresenta tutti gli archi indiretti del grafo, ovvero $\{e_{ij}\,|\;i<j,\,(i,\,j)\in [1;N] \}$
+  		Con questa notazione sono esclusi da qui e per tutto il progetto gli stessi archi in opposta direzione,
+  		ovvero $\{e_{ij}\,|i>j,\,(i,\,j)\in [1,N] \}$.
+  		Essendo $E$ per specifica completamente magliato, è generato da $V\times V \setminus \{e_{ii}\},\; i\in[1;N]$ 
+  \item $E(P_k)$ numero di archi appartenenti al percorso $k$-esimo. Sarà ampiamente utilizzato nella descrizione dell'algoritmo.
+  \item $S$: è un sottoinsieme di $V$ generico, cioè un elemento dell'insieme potenza $2^V$. 
+ 		È necessario per formalizzare in modo generico i vincoli sui sottocicli. 
+  \item $|I|$ essendo $I$ un insieme, è l'operatore cardinalità.
+  \item $\delta(S)$, con $S$ definito come sopra, è un operatore che restituisce l'insieme di archi connettenti $S$ con $V\setminus S$.
+  \item $\rho(v),\; v\in V$ il grado di un nodo è il numero di nodi ad esso collegati. Questo è da intendersi sul grafo indotto dal percorso,
+  		poichè il grafo $(V,E)$ è completamente connesso.
+\end{itemize}
+
+\subsection{Funzione obiettivo}
+	\myeq{fobj}{\max \;J =\,f(g) \triangleq \sum_{k=1}^{K}{\sum_{(i,j)\in E}{p_{ij}g_{ij}^k}}}
+	Scopo dell'algoritmo euristico è massimizzare il profitto ottenuto da ogni arco servito, tra tutti i veicoli. 
+\section{Note sui vincoli del modello}
+\subsection{Relazione tra attraversamento e servizio}
+	\maxfig{relTraXeG.png}{relTraXeG}{Il passaggio non implica la raccolta.}
+	Consideriamo il grafo riportato in figura \ref{fig:relTraXeG}: esso è completo, il deposito è posizionato nel nodo 0, è nota
+	la capacità $Q$ dei veicoli. Ipotizziamo che un veicolo, per massimizzare il profitto, debba percorrere il ciclo verde.\\
+	Supponiamo che il camion riesca a soddisfare il primo e il secondo arco, ma non il terzo in quanto la domanda totale supera $Q$. 
+	In questo caso il veicolo sarà costretto ad attraversare i tre archi per tornare al deposito, ma senza raccogliere il profitto del terzo arco.
+	Evidentemente, se un veicolo non passa per un determinato $e_{ij}$ profittevole, esso non potrà essere soddisfatto. Viceversa, se
+	esso passa per un $e_{ij}$ non è detto che tale domanda venga effettivamente soddisfatta.
+	Riportandosi alle variabili prima elencate, questa considerazione può esser sintetizzata in:
+	\myeq{relTraXeG}{x_{ij}^{k} \geq g_{ij}^{k} \;\;\;\;\; \forall(i,j) \in E,\;\; \forall k \in [1;K]}
+\subsection{Capacità massima dei veicoli}
+	Banalmente, non è possibile raccogliere più della capacità massima del veicolo.
+	\myeq{capacita}{\sum_{(i,j)\in E}{d_{ij}g_{ij}^{k}} \leq Q \;\;\;\;\; \forall k \in [1;K]}
+\subsection{Tempo massimo di tragitto}
+	Banalmente, non è possibile eccedere dai tempi massimi del veicolo.
+	\myeq{tempi}{\sum_{(i,j)\in E}{t_{ij}x_{ij}^{k}} \leq T_{max} \;\;\;\;\; \forall k \in [1;K]}
+\subsection{Percorrenza di cammini}
+	Essendo un cammino definito come \emph{sequenza di lati consecutivi $e_1,e_2,\ldots,e_k 
+	           \in E$ del tipo $e_1 = [v_1;v_2], e_2=[v_2;v_3],\ldots e_k=[v_k;v_{k+1}]$}, dev'essere
+	\myeq{cammino}{\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}} = 2n \;\;\;\;\; n \in \mathbb{N},\; S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; k \in [1;K]}
+	%{x^k[\delta(v_i)]=2n \;\;\;\;\; n \in \mathbb{N},\;\; \forall v_i \in V,\;\; k \in [1;K]}
+	Notare che se questo vincolo non esistesse il modello accetterebbe soluzioni come quella in figura \ref{fig:cammino}
+	\maxfig{y0u1.png}{cammino}{Esempio di cammino non accettabile.}
+\subsection{Gestione dei Sub-tour}
+	\maxfig{SubTour.png}{SubTour}{Esempio di subtour per un singolo camion.}
+	Consideriamo il grafo \ref{fig:SubTour}, supponendo che un veicolo trovi conveniente effettuare il percorso verde. Esso rispetta la condizione sopra espressa,
+	ma non è una soluzione feasible, poichè siamo interessati a mantenere un ciclo unico.
+	Si introduce un vincolo di \emph{subtour elimination}.\\
+	Dati $n$ nodi, un ciclo tra essi  ha bisogno di almeno $n$ archi; pertanto per evitare un sotto ciclo tra i suddetti nodi
+	è sufficiente limitare il numero di archi ad un massimo di $n-1$. Perchè ciò sia valido sull'intero grafo,
+	è necessario imporlo sull'insieme potenza di $V$.
+	\myeq{subtourelimination}
+		{\sum_{(i,j)\in E(S)}{x_{ij}^{k}} \leq |S|-1 \;\;\;\;\; 
+		 S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; k \in [1;K]}
+	Si noti che sono stati qui esclusi tutti i sottoinsiemi includenti il deposito: essi infatti devono ammettere per costruzione del problema un ciclo.\\
+	In questo modo tutti sotto cicli sono stati eliminati. \\Si consideri ora lo scenario presentato in figura \ref{fig:SubTour2}, dove le zone verdi 
+	sono viste come molto convenienti. Supponendo di includerle in soluzione, si contravverrebbe alla regola di \emph{subtour elimination}.
+	Per permettere questa scelta occorre modificare, rilassandolo, il vincolo di \emph{subtour}.
+	Una variabile binaria $y_S^k$ può far accettare i sottocicli, secondo
+	\myeq{subtourelimination2}
+		{\sum_{(i,j)\in E(S)}{x_{ij}^{k}-n^2 y_S^k} \leq |S|-1 \;\;\;\;\; 
+		 S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; k \in [1;K]}
+	Se $y_S^k$ risulta spenta, nel sottoinsieme S non saranno accettati sottocicli, ricadendo nel vincolo \ref{eq:subtourelimination}. 
+	Altrimenti potranno essere attraversati $n^2$ lati in più dentro l'insieme $S$, garantendo la feasibility dell'esempio \ref{fig:SubTour2}.
+	\maxfig{SubTour2.png}{SubTour2}{Scenario in cui effettuare un sottociclo è vantaggioso: le zone verdi sono convenienti}
+	
+\subsection{Connessione dei sub-tour}
+	L'introduzione del precedente vincolo fa ripresentare la situazione esposta in figura \ref{fig:SubTour}, pertanto occorre raffinarlo.
+	Si consideri l'insieme $S$; il numero di archi che collegano S con l'esterno sono $\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}}$.
+	%%La disequazione $$\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}} \geq 2 \;\;\;\;\; S \subseteq V{\setminus}\{0\},\; S \neq \emptyset,\; k \in [1;K]$$
+	%%descrive il numero di archi afferenti a $S$ che sono attraversati dal veicolo. 
+	Essi devono essere in numero pari e, se $S$ è attraversato almeno parzialmente dal veicolo, in numero non nullo: 
+	almeno uno per entrare in $S$ ed uno per uscirne. Dobbiamo comunque incorporare il caso in cui S sia un insieme in cui il camion k
+	non passa: senza questa nota, infatti, i camion dovrebbero passare per tutti i nodi (basta porre $S=v_i$, figura \ref{fig:nonPassoDaS})
+	\maxfig{SubTour3.png}{nonPassoDaS}{Il veicolo non passa da S,ma per il vincolo dovrebbe passarci almeno due volte!}
+	Una nuova variabile ausiliaria $u_S^k$ fornisce una sorta di bonus per i lati uscenti:
+	\myeq{collegamentoCicli}
+		{\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}+u_S^k} \geq 1 \;\;\;\;\; S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; k \in [1;K]}
+	Pertanto:
+	\begin{itemize}
+	  \item se in $S$ considerato il veicolo non transita, si ha necessariamente $u_S^k=1$;
+	  \item se $S$ è un subset d'interesse per un sottociclo, allora $y_S^k=1 \rightarrow u_S^k=0$.
+	  	Quindi il subtour deve essere collegato con l'esterno da almeno un lato. Se però si attuasse
+	  	un modello di questo genere la situazione espressa in figura \ref{fig:sottociclo} sarebbe accettabile;
+	  	se non esistesse il vincolo dichiarato nell'equazione \ref{eq:cammino}.
+	  \item se $S$ è attraversato almeno parzialmente, ma non ha un subtour, allora $y_S^k=0 \rightarrow u_S^k=1$.
+	  	Quindi potrebbe esistere uno scenario come quello mostrato nella figura \ref{fig:cammino}: in $S$ non compaiono
+	  	cicli, tuttavia la presenza del bonus fa sì che l'equazione \ref{eq:collegamentoCicli} sia soddisfatta.
+	  	Di nuovo la presenza del vincolo \ref{eq:cammino} risolve la situazione.  
+	\end{itemize}
+	\maxfig{SubTour4.png}{sottociclo}{Esempio di subtour dal quale occorre uscire.}
+
+\subsection{Relazione tra $y_S^k$ e $u_S^k$}
+	La disuguaglianza seguente esprime una mutua esclusione tra le due variabili ausiliarie.
+	\myeq{uXORy}
+	{u_S^k+y_S^k \leq 1 \;\;\;\;\; S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; k \in [1;K]}
+
+\section{Modello finale}
+{\large
+$$max \sum_{k}^{K}{\sum_{(i,j)\in E}{p_{ij}g_{ij}^{k}}}$$
+$$
+\begin{array}{lr}
+	%%x^k[\delta(v_i)]=2n & n \in N\setminus\{0\},\; \forall v_i \in V,\; \forall k \in [1;K]\\
+	\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}} = 2n & n \in \mathbb{N},\; S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; \forall k \in [1;K]\\
+	x_{ij}^{k} \geq g_{ij}^{k} & \forall(i,j) \in E,\; \forall k \in [1;K]\\
+	\sum_{(i,j)\in E}{d_{ij}g_{ij}^{k}} \leq Q & \forall k \in [1;K]\\
+	\sum_{(i,j)\in E}{t_{ij}x_{ij}^{k}} \leq T_{max} & \forall k \in [1;K]\\
+	\sum_{(i,j)\in E(S)}{x_{ij}^{k}-n^2 y_S^k} \leq |S|-1 & S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; \forall k \in [1;K] \\
+	\sum_{(i,j)\in \delta(S)}{x_{ij}^{k}+u_S^k} \geq 1 & S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; \forall k \in [1;K] \\
+	u_S^k+y_S^k \leq 1 & S \subseteq V{\setminus}\{v_1\},\; S \neq \emptyset,\; \forall k \in [1;K] \\
+\end{array}
+$$}

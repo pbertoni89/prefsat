@@ -1,0 +1,58 @@
+\section{Livello \emph{long-term memory}}
+
+È il livello di logica più alta del programma. Lo scopo principale del livello è quello di generare soluzioni costruttive
+per avviare l'algoritmo specificato in \emph{STM}: infatti l'algoritmo ottiene risultati diversi a seconda della costruttiva.
+Due sono i problemi fondamentali che devono essere risolti al livello \emph{LTM}:
+\begin{itemize}
+	\item come generare la costruttiva da fornire al livello \emph{STM};
+	\item determinare il numero di volte di esecuzioni di \emph{STM};
+\end{itemize}
+
+\maxfig{ltm.png}{fig:ltm}{Schema generale del livello \emph{LTM}.}
+
+\subsection{Generazione delle soluzioni costruttive}
+Il livello \emph{long term memory} genera diverse soluzioni costruttive a seconda del numero d'iterazione $iterSTM$ attuale.
+\begin{itemize}
+	\item in caso $iterSTM = 1$, la costruttiva viene generata secondo l'algoritmo \emph{Simple} specificato in \ref{subsec:eurconstr};
+	\item in caso $iterSTM = 2$, la costruttiva viene generata secondo l'algoritmo \emph{SimpleRandom} specificato in \ref{subsec:eurconstr};
+	\item in caso $iterSTM > 2$, si ha una generazione dinamica che tiene conto delle soluzioni ottenute alle precedenti iterazioni di STM.
+\end{itemize}
+L'ultimo caso si divide ulteriormente a seconda della necessità di \emph{intensificare} o di \emph{diversificare} la soluzione. 
+
+\subsubsection{Intensificazione}
+\emph{LTM} inserisce come soluzione costruttiva la stessa soluzione ottima ritornata
+da \emph{STM}, senza aggiungere alcuna tenure.
+
+\subsubsection{Diversificazione}
+
+Per generare la soluzione costruttiva in caso di diversificazione ci si appoggia a dei dati raccolti in una tabella delle frequenze. La tabelle delle
+frequenze esprime, per ogni arco possibile, il numero di volte che esso e' stato in soluzione: ogni soluzione ritornata
+da \emph{STM} viene analizzata in modo da sommare ad ogni valore nella tabella 1 se l'arco è incluso nella soluzione rilasciata, 0 se non lo è.\\
+In questo modo è possibile stabilire quali archi siano i più coinvolti nello storico delle soluzioni. Tuttavia la soluzione costruttiva
+non ingloba questi archi, ossia quelli più favoriti, bensì gli archi che meno sono apparsi nell'intero storico delle soluzioni.\\
+La soluzione generata dal livello è una soluzione in cui:
+\begin{itemize}
+	\item ogni arco è doppio;
+	\item vengono scelti gli archi più rari nell'intero storico delle soluzioni ritornate da \emph{STM};
+	\item da un nodo escono zero o più doppi archi
+	\item TQOK;
+\end{itemize}
+
+Le soluzioni costruttive dunque hanno una topologia ad albero in cui, tuttavia, ogni ramo dell'albero è in realtà un doppio arco.
+
+\subsubsection{Scelta tra intensificazione e diversificazione}
+Una problema da risolvere si presenta nel determinare, data una soluzione rilasciata da \emph{STM}, se è necessario intensificare o diversificare. 
+Questa decisione viene presa a seconda di quanto la soluzione ritornata da \emph{STM} sia stata già intensificata.\\
+Immaginiamo infatti che \emph{STM} esegua al massimo 100 iterazioni e che alla fine ritorni la soluzione $\alpha$. Decidere se intensificare o diversificare dipende praticamente da quanto tempo $\alpha$ è stata soluzione ottima all'interno di \emph{STM}; se infatti $\alpha$ è diventata soluzione ottima, per esempio, alla quinta iterazione è evidente che essa è già stata stressata abbastanza e che quindi è meglio diversificare. Se invece $\alpha$ è diventata soluzione ottima solo alla 99-esima iterazione, \emph{STM} è stata costretta dal vincolo delle
+100 iterazioni ad uscire. Invece, magari, con qualche iterazione in più, era possibile migliorare ulteriormente la soluzione: in questo caso
+la soluzione va intensificata.\\
+Bisogna quindi semplicemente stabilire una soglia di iterazioni \emph{LOS} \emph{a} entro cui:
+\begin{itemize}
+	\item se la soluzione ottima è tale da meno di \emph{a} allora bisogna intensificare;
+	\item altrimenti bisogna diversificare
+\end{itemize}
+Tale soglia è nell'algoritmo definita come una percentuale del massimo numero di iterazioni \emph{LOS} ammissibili in una esecuzione di \emph{STM}.
+Il parametro \textbf{LTM INTENSIFICATION STM THRESHOLD} esprime tale percentuale ed è stato fissato in modo hardcoded a 5\%.
+
+\subsection{\emph{Stopping rule} del livello \emph{LTM}}
+\emph{Long term memory} termina quando vengono eseguiti il numero di iterazioni \emph{STM} indicato tra i parametri del file di configurazione. Si rimanda alla sezione \ref{sec:cfg}.

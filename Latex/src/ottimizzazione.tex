@@ -1,0 +1,145 @@
+\section{Miglioramenti suggeriti}
+È stata implementata una serie di regole utili ad evitare delle chiamate alle
+procedure ``pesanti'' usate dall'algoritmo \emph{Pref}, che sono qui elencate.
+Il codice utilizzato è comunque pseudocodice e non standard $C_{++}$. Non
+dovrebbe esser difficile però individuarlo nel sorgente.
+\subsection{Sulla chiamata a Grounded e Pref}
+La regola espressa informalmente è: \emph{la chiamata a una di queste due
+procedure produce risultati noti a priori quando il primo argomento è uguale al
+secondo e coincide con un grafo di un solo nodo. In questo caso, l'insieme
+restituito è composto da un singoletto contenente quell'unico nodo.}
+
+\begin{algorithm}
+	\SetAlgoLined
+	\If {$\Gamma=C\;\cap\;\Gamma\,.\,$\upshape{cardinality}$=1$} {
+		$e \leftarrow \Gamma$ \\
+		$I \leftarrow \emptyset$
+	}
+	\Else {
+		Grounded($\Gamma,\,C,\,e,\,I$)
+	}
+	\caption{Miglioramento nella gestione della chiamata a Grounded.}
+\end{algorithm}
+
+\begin{algorithm}
+	\SetAlgoLined
+	$ A \leftarrow \Gamma\downarrow S_i{\backslash}O$ \\
+	$ B \leftarrow I\cap C$ \\
+	\If {$A=B\;\cap\; A\,.\,$\upshape{cardinality}$=1$} { 
+		$E^* \leftarrow  \{A\}$ 
+	}
+	\Else {
+		$E^* \leftarrow $Pref($A,\,B$)
+	}
+	\caption{Miglioramento nella gestione della chiamata a Pref.}
+\end{algorithm}			
+		
+\subsection{Sulla chiamata a PrefSAT}
+La regola espressa informalmente è: \emph{la chiamata alla procedura produce
+risultati noti a priori quando il primo argomento è uguale al secondo e coincide
+con un componente fortemente connesso (\emph{SCC}) di cardinalità 1 o 2. Nel
+primo caso, l'insieme restituito è composto da un singoletto contenente proprio
+l'\emph{SCC}, nel secondo caso è composto da due singoletti, contenenti ciascuno
+uno dei due nodi dell'\emph{SCC}. }
+
+Nel codice si troveranno istruzioni leggermente diverse dalle seguenti, ma
+chiaramente equivalenti, per sfruttare meglio caching e lazy evaluation.
+
+\begin{algorithm}
+	\SetAlgoLined
+	$ A \leftarrow \Gamma\downarrow S_i$ \\
+	$ B \leftarrow I\cap C$ \\
+	\If {$A=B\; \cap\; S_i\,.\,$\upshape{cardinality}$=2$} {
+		$\{S_i^\prime,\,S_i^{\prime \prime}\} \;\leftarrow \; S_i$\,.\,\upshape{reduceSingletons()} \\
+		$E^* \leftarrow  \{S_i^\prime,\,S_i^{\prime \prime}\}$
+		} 
+	\Else {
+		$E^* \leftarrow $PrefSAT($A,\,B$)
+	}
+	\caption{Miglioramento nella gestione della chiamata a PrefSAT.}
+\end{algorithm}	
+
+Durante il testing però la prima parte di questa regola non si è rivelata coerente con
+l'output di \emph{PrefSAT} e quindi generalmente ha prodotto risultati non
+corretti. Si è notato in particolare che talvolta \emph{PrefSAT} veramente si 
+comporta come qui specificato, talvolta restituisce un insieme vuoto.
+Prudenzialmente quindi si è ristretta la miglioria al solo caso ove la
+cardinalità è 2. Per giustificare quanto detto, si riportano qui gli output
+ottenuti a questo proposito, in due dei tre esempi forniti nel documento delle specifiche.
+Si spera che questo aiuti chi è più esperto a identificare casi degeneri della
+regola espressa.
+
+\subsubsection{caso: esempio "1"}
+\emph{PrefSAT} viene chiamato due volte in totale, per due $e$ differenti.
+\begin{center}
+  	$ \Gamma\downarrow S_i = I \cap C = \{ n9 \}$ \\
+  	$ S_i = \{ n9 \}$ \\
+  	$ e = \{ n1\;n3\;n6\;n13 \}$ \\
+  	$ E^*_{suggested} = \{ \{ n9 \} \}$ \\
+  	$ E^*_{returned}  = \{ \{ \} \}$
+\end{center}
+il medesimo risultato si ottiene nella seconda chiamata, ove cambia solo 
+\begin{center}
+	$ e = \{n1\;n3\;n6\;n14\}$
+\end{center}
+In definitiva \emph{Pref} restituisce 
+\begin{center}
+	$\{\{n1\;n3\;n6\;n9\;n13\}\;\;\{n1\;n3\;n6\;n9 \;n14\}\}$ 
+\end{center}
+invece che
+\begin{center} 
+	$\{\{n1\;n3\;n6\;n13\}\;\;\{n1\;n3\;n6\;n14\}\}$
+\end{center} come previsto dall'oracolo (si faccia riferimento a \ref{sec:oracles}).
+
+\subsubsection{caso: esempio "3"}
+\emph{PrefSAT} viene chiamato una volta in totale.
+\begin{center} 
+  	$ \Gamma\downarrow S_i = I \cap C = \{ n3 \}$ \\
+  	$ S_i = \{ n3 \}$ \\
+  	$ e = \{ n1\;n4\}$ \\
+  	$ E^*_{suggested} = \{ \{ n3 \} \}$ \\
+  	$ E^*_{returned}  = \{ \{ n3 \} \}$
+\end{center} 
+\emph{Pref} restituisce $\{ \{n1\;n2\;n3\;n4\} \}$ come previsto. 
+
+\subsection{Sulla chiamata a Boundcond}
+%Vi sono due regole espresse informalmente, da interpretare. La prima afferma
+% che 
+La regola espressa informalmente è: \emph{sia Pref($\Gamma, C$), ove $\Gamma=C$.
+La chiamata a Boundcond per ogni SCC senza alcun SCC padre, ovvero non attaccato da altri SCC, 
+restituirà necessariamente come $O$ un insieme vuoto e come $I$ l'SCC stesso, per
+qualunque $e$.} %La seconda afferma che \emph{a pari condizioni sui soli
+%argomenti di Pref, è sufficiente che l'SCC precedente nell'ordinamento
+%topologico non sia padre dell'SCC considerato perchè Boundcond restituisca come
+%$O$ un insieme vuoto e completare.}
+%Pertanto si ha che la prima regola implica la seconda, precedendola quindi
+% nella priorità dei controlli.
+
+\begin{algorithm}
+	\SetAlgoLined
+	\If {$\Gamma=C\; \cap\; S_i\,.\,$\upshape{fathers}$=\emptyset$} {
+		$O \leftarrow \emptyset$ \\
+		$I \leftarrow S_i$
+		} 
+	\Else {
+		$(O,I) \leftarrow $Boundcond($\Gamma,\, S_i,\, e$)
+	}
+	\caption{Miglioramento nella gestione della chiamata a Boundcond.}
+\end{algorithm}	
+
+% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+\section{Miglioramenti personali}
+
+\subsection{Gestione dei padri di $S_i$}
+Si definisce $\alpha_i \triangleq \bigcup \beta_i$, dove $\beta_i$ è un SCC
+$S_j$ che attacca $S_i$. Formalmente dunque $\alpha_i$ è un unione di
+\emph{SetArguments} e quindi un \emph{SetArguments} a sua volta, ma se si
+osserva che $S_i \cap S_j \; \forall i\neq j$ (ovvero gli SCC sono insiemi
+disgiunti di \emph{Arguments}), è possibile considerare $\alpha_i$ come un
+semplice insieme generico. Per semplicità è stato quindi considerato un
+\textbf{std::vector}.
+
+
+MAX SEI PREGATO DI INSERIRE QUA QUALUNQUE MIGLIORAMENTO ALGORITMICO/STRUTTURA DATI. CHE TI VENGA IN MENTE.
+TIENI NEL CAPITOLO ``STRUTTURE DATI'' SOLO UNA VERSIONE DI ``PARTENZA'', COSÌ SEMBRA ABBIAM FATTO PIÙ ROBA :D

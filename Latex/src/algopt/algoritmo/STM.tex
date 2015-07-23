@@ -1,0 +1,145 @@
+\section{Livello \emph{short-term memory}}
+	Versione base della tecnica \emph{TS}, mira a consentire mosse peggiorative nel tentativo di fuoriuscita dagli ottimi locali. 
+	Invoca pertanto una o più esecuzioni del livello \emph{LOS}, secondo determinati parametri \emph{STM} ottenuti da \emph{LTM} e secondo il comportamento
+	delle esecuzioni stesse.\\
+	Per ogni iterazione di \emph{STM} ogni veicolo ha diritto ad effettuare una e una sola mossa. Una mossa di un veicolo è un compartimento stagno rispetto allo stato
+	degli altri veicoli, per la non interazione tra essi discussa alla sezione \ref{subsec:vehicleinter}. \\ 
+	Il livello \emph{short-term} ha due funzioni principali, esposte di seguito.
+\subsection{Taboo List} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	È una struttura dati di dimensione dinamica contenente le mosse vietate, cioè \emph{forbidden}. Essa viene gestita e aggiornata dal \emph{STM}, ma dev'essere
+	nota al \emph{LOS}, il quale non può individuare soluzioni vietate dalla \emph{TL} a meno che non soddisfino i \emph{criteri d'aspirazione}.
+	A causa della non interazione tra i veicoli ogni veicolo possiede la \emph{propria} lista e solo ad essa è soggetto.
+	Ogni elemento di \emph{TL} è un arco (quindi identificato da due indici $(i,j)$ pari ai suoi nodi) a cui vengono associati due valori:
+	\begin{itemize} 
+	  \item $\lambda_{ij}^k \in \mathbb{N}\;\;\;$ \emph{taboo tenure}, è il numero di iterazioni per cui $e_{ij}$ non può essere incluso nell'esplorazione d'intorno durante una mossa;
+	  \item $\nu_{ij}^k \in \mathbb{N}\;\;\;$ \emph{iterazione corrente} al momento dell'inserzione in \emph{TL} (al limite posta a 0 in inizializzazione)
+	\end{itemize}
+	e tali per cui $\lambda_{ij}^k+\nu_{ij}^k = \pi_{ij}^k$ \emph{iterazione di expiration} dalla \emph{TL}.
+	La semantica è: $e_{ij}$ non può essere considerato nella variazione d'intorno finchè non sarà raggiunta l'iterazione $\pi$; \emph{e.g.}:
+	\begin{itemize}
+	  \item se durante una mossa l'arco $e_{ij}$ già appartiene a $P_k$, esso non potrà uscire (a prescindere dal tipo di mossa, che si vedrà più avanti)
+	  \item  viceversa archi rimossi dalla soluzione non potranno esser considerati come candidati a rientrarvi, sempre in ogni tipo di mossa.
+	\end{itemize}
+	Pertanto un arco entrante in \emph{TL} alla generica iterazione $\psi$ assume $\pi_{ij}^k\leftarrow\psi+\overline{\lambda}$.
+	A seconda del tipo di spostamento (arco aggiunto in $P_k$ oppure rimosso) viene associato un diverso valore $\overline{\lambda}$,
+	 parametrizzato dall'utente come descritto in \ref{sec:cfg}.	
+	\begin{algorithm}
+	 \SetAlgoLined	 
+	 \SetKwProg{Fn}{Function}{ is}{end}
+	 \Fn{\upshape{isTaboo($\pi_{ij}^k$) :} bool}{ \eIf{$\pi_{ij}^k\leq\psi$}{return false\;}{return true\;} }
+	\caption{Procedura per conoscere la condizione di appartenenza di un arco a una Taboo List.}
+	\end{algorithm}
+	
+\subsection{Intensificazione della ricerca} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\label{subsec:neighbourhoods}
+	È mirata a decidere, sulla base di alcuni parametri, la tipologia dell'intorno nel quale la prossima soluzione può trovarsi.
+	Classificare gli intorni significa restringere l'intorno originario $\mathcal{N}(x)$ della soluzione $x$, per contenerne le
+	dimensioni e soprattutto \emph{intensificare} la ricerca verso una direzione precisa. Si vedrà come tutte le tipologie individuino 
+	intorni di dimensione polinomiale, rispettando uno dei vincoli progettuali principali di un'euristica. 
+	La logica di intensificazione è il vero focus sulle prestazioni offerte da \emph{STM}.
+	Qualora venga deciso di aggiungere un arco a un percorso:
+	\begin{itemize} 
+		\item che non è stato raccolto da nessuno;
+		\item tale per cui la sua raccolta mantiene la soluzione $Q_{OK}$
+	\end{itemize}
+	esso viene automaticamente attraversato e raccolto, altrimenti semplicemente attraversato.
+	
+	Sono ora elencate le possibili mosse progettate e implementate. Esse \emph{non} sono computate all'interno di \emph{STM}, ma solo selezionate
+	di volta in volta, secondo la \emph{logica di intensificazione}. La vera esecuzione delle mosse, cioè la generazione e l'esplorazione degli intorni, avviene a livello \emph{LOS}.
+	
+	Si noti che l'\emph{intensificazione} qui trattata non coincide con quella discussa in \emph{LTM}, sebbene il concetto padre sia il medesimo.
+\subsubsection{Mossa add} 
+	E' definibile come l'intorno $\mathcal{N}_{ADD}(x,g)$ che aggiunga un nuovo nodo al percorso $P_k$, inserendo due nuovi archi da percorrere
+	e raccogliere se possibile. I due archi possono essere un \emph{arco doppio}, come in \ref{fig:addScenario1}. 
+	\maxfig{add1.png}{addScenario1}{Esempio di mossa \emph{add} orientata alla doppia percorrenza di un arco.}Il dominio di $\mathcal{N}_{ADD}$ contiene tutti e soli gli archi di $P_k$.
+	Ognuno di questi individua per costruzione due nodi alle sue estremità, e questi a loro volta individuano $|V\setminus P_k|$ possibili triangolazioni con un nodo
+	non appartenente al percorso, oltre a $2|V\setminus P_k|$ archi doppi con i medesimi. La vastità dell'intorno è data quindi dal
+	 cartesiano tra gli archi di $P_k$ e
+	i nodi di $V \setminus P_k$ candidati all'inserimento, restando quindi simile a una legge quadratica.
+	In più, si considerano candidati anche tutti i nodi di $P_k$ eccetto i due nodi estremi che fungon da perno, come in figura \ref{fig:addScenario2}. \\
+	\maxfig{add2.png}{addScenario2}{Esempio di mossa \emph{add} orientata verso un nodo già appartenente al percorso}
+	Questo porta la complessità finale ad avere un upper bound di $3|E(P_k)-2||V\setminus P_k|$.
+	\input{./src/algoritmo/pseudoAdd.tex}
+
+\subsubsection{Mossa swap} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	È una mossa intesa a scambiare due archi con altri due archi aventi in comune due nodi coi primi. Formalmente quindi il
+	dominio di $\mathcal{N}_{SWAP}(x,g)$ è $\{(e_{ij},\,e_{kl}) \in P_k\;\;|\;\; e_{ij} \neq e_{kl}\}$, ovvero tutte le combinazioni senza ripetizione degli
+	archi camminati nel percorso. Per ogni coppia di questo insieme si valuta $\tilde P_k$ ottenuto sostituendo ad essa la coppia $(e_{il},\,e_{jk})$ calcolandone la $\mathcal{J}(g\prime)$
+	associata. \\
+	\maxfig{swap1.png}{swapScenario2}{Esempio di mossa \emph{swap}.}
+	La grandezza dell'intorno $\mathcal{N}_{SWAP}$ è quindi quella delle combinazioni di due elementi senza ripetizione dei $|E(P_k)|$ archi del percorso, 
+	perciò applicando la binomiale si ottiene $\frac{(E(P_k)-1)\,E(P_k)}{2}$ ovvero una complessità quadratica.
+	Nell'elaborazione della mossa si rende necessario un controllo di connessione del percorso per ogni possibile candidato, in quanto uno \emph{swap} 
+	tra due archi appartenenti a un ciclo nel $50\%$ dei casi genera due sub-tour. La mossa \emph{swap} diventa perciò un bottleneck teorico nell'esecuzione
+	del programma, ma i tempi finali accettabili l'hanno comunque validata come mossa tollerabile.
+	\input{./src/algoritmo/pseudoSwap.tex}
+
+\subsubsection{Mossa remove} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Si definisce così una mossa che elimini $2$ archi adiacenti
+	$e_{il},\,e_{jl},\,\, i\neq j$ da $P_k\setminus v_1$ e che inserisca in $P_k$ l'arco $e_{ij}$ connettente i due nodi esterni agli archi eliminati, 
+	detto \emph{arco triangolante}. In questo senso, la mossa è esattamente speculare all'\emph{add}.
+	L'intorno esplorato $\mathcal{N}_{REM}(x,g)$ è perciò l'insieme di tutte le possibili suddette coppie, la rimozione delle quali induce soluzioni 
+	$(x\,\prime,g\,\prime)$ che computano $f(g\,\prime)$, essendo la nuova soluzione uguale a $P_k$ privato degli archi semplici ed unito all'arco triangolante.
+	
+	Come in \emph{swap}, una mossa \emph{remove} può generare la presenza di subtours. Anch'essa dunque effettua un controllo di connessione e valgono le stesse
+	considerazioni sull'accettabilità delle performances.
+	
+	Remove è una mossa progettata per rilassare la quantità di risorse a
+	disposizione. Non è sempre possibile, in quanto sebbene per i tempi di percorso vale la disuguaglianza triangolare, per le quantità di servizio 
+	il programma non prevede di poter attraversare l'arco triangolante senza raccogliere, qualora la raccolta sia possibile.
+	La piena efficienza di remove avviene quando l'elemento selezionato nell'intorno è un'istanza di mossa che riduce più possibile le risorse spese,
+	a fronte di un esiguo decremento del profitto come effetto collaterale.
+	\input{./src/algoritmo/pseudoRemove.tex}
+	
+\subsubsection{Logica di intensificazione} %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	Presentate quindi le tipologie di mossa occorre definire una logica di livello \emph{STM} che decida come ordinarle e quando richiederle.
+	Siccome i percorsi inizializzati dall'euristica costruttiva sono molto brevi, è
+	ragionevole tentare di espanderli con \emph{add} in una prima fase.
+	Fare più \emph{add} possibili fino a raggiungere i vincoli $TQ_{OK}$ sarebbe però una decisione greedy: si arriverebbe in uno stato dove solo intorni molto piccoli di mosse \emph{add} e \emph{swap} sono possibili, impoverendo notevolmente l'evoluzione.
+	Servono dunque delle quantità variabili in uno \emph{spazio di stato delle risorse} $\Psi \triangleq [0,T_{MAX}]\times[0,Q]$, che descrivano 
+	la propensione di \emph{STM} a scegliere uno dei tre intorni piuttosto che gli altri, ad ogni iterazione $I_{STM}$. Due ottime candidate sono già state 
+	individuate in $\tau^k$ e $\theta^k$.  
+	Per sincerarsi da eventuali errori modellistici che potrebbero, forzando deterministicamente lo stesso comportamento, arrestare la convergenza 
+	a ottimi locali ben lontani dal globale, è stato ritenuto opportuno rendere probabilistica la scelta del tipo d'intorno, mirando a perturbare 
+	possibili decisioni non intelligenti.
+	Si cerca quindi una relazione $$ s(\tau,\theta) \, : \,\Psi \subset \mathbb{N}^2 \rightarrow 
+	(\alpha_{ADD},\alpha_{SWAP},\alpha_{REM}) = (\alpha_1,\alpha_2,\alpha_3)\in(0,1]^3$$ 
+	che leghi le due variabili descritte a tre coefficienti $\alpha$ rappresentanti tre aree probabilistiche dell'universo $\Omega$ delle possibilità; 
+	\emph{i.e.} tanto maggiore $\alpha_{ADD}$ rispetto agli altri $\alpha$, tanto più probabilmente verrà in quella iterazione eseguita $\mathcal{N}_{ADD}$.
+	Pertanto gli $\alpha$ vanno rapportati in modo percentuale: si creano i valori $\tilde{\alpha_i}=\frac{\alpha_i}{\alpha_1+\alpha_2+\alpha_3}\;\;\; i=1,2,3$.
+	Finalmente un numero pseudocasuale distribuito uniformemente tra $0$ e $1$ associa biunivocamente le proprie estrazioni con le tre casistiche.
+	La relazione prima accennata è stata modellizzata con un vettore di tre funzioni gaussiane, del tipo
+	$$f_X(x) = \frac{1}{{(2\pi)}^3\sqrt{\det C}}a^{-\frac{1}{2}{(x-\mu_X)}^TC^{-1}(x-\mu_X)} $$
+	essendo \begin{itemize}
+	  \item $x$ il vettore $(\tau,\,\theta)$
+	  \item $C$ una matrice di covarianza simmetrica definita positiva
+	  \item $\mu_X$ il punto di massimo per la gaussiana.
+	  \item $a$ un numero reale di cui si discuterà per ultimo.
+	\end{itemize}
+	Per prima cosa si è posta la locazione delle tre medie rispettivamente in
+	\begin{itemize}
+	  \item $\mu_{ADD} = (0,0)\,$, stato di risorse completamente libere
+	  \item $\mu_{SWAP} = (\frac{T_{MAX}}2,\frac{Q}2)\,$, stato di risorse mediamente allocate
+	  \item $\mu_{REM} =(T_{MAX},Q)\,$, stato di risorse completamente esaurite.
+	\end{itemize}
+	Non così banale è invece l'assegnazione delle tre matrici di covarianza. Valori bassi potrebbero concentrare le campane in regioni molto piccole
+	dello spazio di stato delle risorse, lasciando vaste zone a concentrazione infinitesima e verosimilmente vanificando la complessità di questo approccio.
+	Inoltre occorre ponderare la correlazione tra le variabili, per riempire adeguatamente lo spazio di stato $\Psi$ (un reticolo di un parallelepipedo) nel
+	caso di problemi con grande disuguaglianza di risorse disponibili.
+	Si è seguito un approccio tale per cui, grazie al grado di libertà offerto dalla scelta di $a$, è permesso impostare funzioni gaussiane corrette che
+	rispettino la seguente condizione: \\
+	sia $b$ il punto di minimo desiderato della curva gaussiana in $\Psi$, allora 
+	$$ \log a = \frac{-2\log b}{T^2\,C^{-1}_{11} + TQ\, (C^{-1}_{21} + C^{-1}_{12}) + Q^2\,C^{-1}_{22}} $$
+	Ora è permesso settare $C$ a un valore qualsiasi, si è scelto banalmente la matrice identità. Per costruzione pertanto $f_X(x) \geq b \;\;\forall x \in \Psi$.
+	
+	\maxfig{gaussians.png}{gaussBells}{Esempio di campane \emph{ADD}, \emph{SWAP}, \emph{REMOVE} nello spazio di stato $T, Q$.}
+	
+	Si osserva infine che, considerato
+	\begin{itemize}
+	  \item il determinismo \emph{interno} a ciascuna delle tre mosse
+	  \item la possibilità che una mossa fallisca, perchè nessuna soluzione tra le sue candidate è $TQ_{OK}$
+	\end{itemize}
+	invocare la mossa dello stesso tipo di una appena eseguita che abbia restituito un valore di fail è completamente inutile.
+	Un piccolo improvement in questi casi è ottenuto con una struttura denominata informalmente \emph{meta taboo list}, che fondamentalmente tiene
+	memoria della possibile ultima tipologia di mossa fallita. Il non determinismo dell'estrazione nella logica \emph{STM} permetterà di selezionare
+	velocemente un'altra mossa da invocare.

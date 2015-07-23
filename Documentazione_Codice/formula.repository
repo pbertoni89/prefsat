@@ -1,0 +1,30 @@
+\form#0:\[ node_name (node_number) \]
+\form#1:\[ A = {a,b,c,d,e} \]
+\form#2:\[ B = {b,e,a,d,c} \]
+\form#3:\[ A-B={a \in A | a \not \in B} \]
+\form#4:\[ \Gamma_1 = \{ \gamma_{11}; \gamma_{12} ; ... ; \gamma_{1n} \} \]
+\form#5:\[ \Gamma_2 = \{ \gamma_{21}; \gamma_{22} ; ... ; \gamma_{2n} \} \]
+\form#6:\[ \Gamma_2 \subseteq \Gamma_1 \]
+\form#7:\[ \Gamma_1 \downarrow \Gamma_2 \hat{=} \{ \gamma \in \Gamma_1 | \gamma \in \Gamma_2 \} \]
+\form#8:\[ {\Gamma}_1 \downarrow {\Gamma}_2 \hat{=} \{ e_{ij} \in {\Gamma}_1 | i \in {\Gamma}_2, j \in {\Gamma}_2 \} \]
+\form#9:$ \Gamma_1 \downarrow \Gamma_2 $
+\form#10:$ \Gamma_2 $
+\form#11:\[ A = \{a_1; a_2; ... ; a_n\} \]
+\form#12:\[ B = \{b_1; b_2; ... ; b_m\} \]
+\form#13:\[ A \cap B \hat{=} \{c | c \in A, c \in B \} \]
+\form#14:\[ \{n01,n45,n13,n03\} \]
+\form#15:\[ \{n01,n13,n45,n03\} \]
+\form#16:$ \otimes $
+\form#17:\[ A \otimes E \hat{=} \{ e_{i}^{new} : e_{i}^{new}=e_{i} \cup A\} \]
+\form#18:$ e_{i} $
+\form#19:$ A=\{ a, b \}$
+\form#20:$ E=\{ \{ e, d \} \{ a, e \} \{ b, c, d \} \{ a, b \} \}$
+\form#21:$ A \otimes E $
+\form#22:\[ A \otimes E = \{ \{ a, b, e, d \} \{ a, b, e \} \{ a, b, c, d \} \{ a, b \} \} \]
+\form#23:$ A+B $
+\form#24:\[ A={ {1,3}, {3,4,5}, {,5,6,1,2} } \]
+\form#25:\[ B={ {4}, {5}, {3,4}, {8,6}} \]
+\form#26:\[ A+B={ {1,3}, {3,4,5}, {,5,6,1,2}, {4}, {5}, {3,4}, {8,6} } \]
+\form#27:\[A=\{\{a,b,c\}\{d,e,f\}\}\]
+\form#28:\[B=\{\{d,e,f\}\{a,b,c\}\}\]
+\form#29:\[B=\{\{a,c,b\}\{d,e,f\}\}\]

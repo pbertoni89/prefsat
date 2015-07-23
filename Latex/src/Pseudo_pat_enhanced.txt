@@ -1,0 +1,103 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NOTA DI MAX ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ì
+
+per vedere una rappresentazione grafica del grafo esegui questi comando
+sul terminale.
+
+Precondizioni per l'utilizzo
+1) avere un terminale di tipo bash
+2) essere nella stessa cartella in cui si trova il file da visualizzare
+3) avere installato il comando "dot" (puoi installarlo andando su http://www.graphviz.org/Download_linux_ubuntu.php)
+4) sosituisci ad esempio1.dl il file che vuoi converire.
+
+Postcondizioni:
+1) si creerà un file di nome esempio1.dot
+2) si creerà una png di nome esempio1.png
+
+HAVE FUN!
+
+cat esempio1.dl | sed '1s/^/digraph ciao {\n/' | sed 's/arg(\([a-zA-Z0-9][a-zA-Z0-9]*\))\./\1/g' | sed 's/att(\([a-zA-Z0-9][a-zA-Z0-9]*\),\([a-zA-Z0-9][a-zA-Z0-9]*\))\./\1 -> \2/g' > esempio1.dot && echo '}' >> esempio1.dot && dot -Tpng esempio1.dot -o esempio1.png
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PREF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Pref(G, C)
+   
+	(e,I) <- Grounded(G, C)
+	EP <- {e}
+    if I = emptySet 
+		return Ep
+	G <- G down I
+				
+	S <- SCCSSEQ(G)
+
+	for i <- 1 to length[S]
+		EP' <- emptySet
+		for each e in EP
+			(O, I) <- boundcond(G, S[i], e)
+			if O = emptySet
+				if I <> emptySet
+					E* <- SATPref(G down S[i], I intersect C)
+				else 
+					E* <- emptySet
+			else 
+				E* <- Pref(G down (S[i]\O), I intersect C)
+			EP' <- EP' join (e circlecross E*)
+		EP <- EP'
+	return EP
+
+~~~~~~~~~~~~~~~~~~~~~~ GROUNDED ~~~~~~~~~~~~~~~~~~
+
+Grounded(G, C)
+	e <- emptySet
+	I <- A
+	while exists N incluso in C che contiene solo 
+			nodi che non sono attaccati da nodi in I
+	do 
+		e <- e join N
+		ANC <- sottoinsieme di C contenente tutti 
+				i nodi attaccati dai nodi in N
+		ANI <- sottoinsieme di I contenente tutti
+				i nodi attaccati dai nodi in N	
+		C <- C \ (N join ANC)
+		I <- I \ (N join ANI)
+	return (e, I)
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ NOTE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+G = Gamma = grafo = (A, R)
+
+C incluso in A, alla prima invocazione C=A
+
+G_down_I è il sottografo di G contenente solo 
+	i nodi in I
+	i relativi archi (non sospesi) (cioè interni a I?)
+
+G_down_S[i] è il sottografo di G che contiene solo i nodi in S[i]
+	(e la storia degli archi sospesi? ci saran lo stesso I guess)
+	
+E* restituito da SATPref(G_down_S[i], I_intersect_C) 
+è l’insieme di tutte le PE di G_down_S[i]
+(e I e C a cosa gli servono?)
+
+e circlecross E* è l’insieme di insiemi di nodi così definito:
+	{e join e*| e* in E*}
+
+S è una sequenza di SCC; comprende tutti gli SCC presenti in G 
+	secondo un ordine tale per cui 
+		S[0] non subisce attacchi
+		_and_
+		per ogni i in [2..length[S]]
+			S[i] subisce eventuali attacchi solo da parte degli SCC 
+			che lo precedono in S (indicati cumulativamente come S[1..i-1])
+			(topological sort o toposort)
+		
+~~~~~~~~~~~~~~~~~~~~ BOUNDCOND ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	
+O è il sottoinsieme dei nodi di S[i] attaccati da nodi in e
+
+I è il sottoinsieme dei nodi di S[i]\O che 
+	non subiscono attacchi da parte di nodi in G esterni a S[i]
+	_xor_
+	subiscono eventuali attacchi solo da parte di nodi che 
+		sono contenuti in G ma non in (S[i] join e)
+		_and_
+		sono attaccati da nodi in e

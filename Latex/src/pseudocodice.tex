@@ -1,0 +1,69 @@
+\begin{algorithm}
+	 \SetAlgoLined
+	 \KwIn{$\Gamma,\,C$}
+	 \KwData{$S,\,E^*,\,e,\,O,\,I,\,E_P^\prime$}
+	 \KwResult{$E_P$}
+	 $(e,\,I) \leftarrow \;$Grounded($\Gamma,\,C$) \\	
+	 $E_P \leftarrow \{e\}$ \\
+	 \If {I.\upshape{isEmpty}}
+		{\Return Ep}
+	$\Gamma \leftarrow \Gamma \downarrow I$ \\			
+	$S \leftarrow$ SCCSSEQ($\Gamma$) \\
+	\ForEach{$S_i \in S$}{
+		$E_P^\prime \leftarrow \phi $\\
+		\ForEach {$e \in E_P$} {
+			$(O,\,I) \leftarrow$ boundcond($\Gamma,\,S_i,\,e$) \\
+			\If {O.\upshape{isempty}} {
+				\If {I.\upshape{isempty}} {
+					$E^* \leftarrow \phi$
+					}
+				\Else { 
+					$E^* \leftarrow$ SATPref($\Gamma \downarrow S_i,\,I \cap C$)
+					}
+				}
+			\Else { 
+				$E^* \leftarrow$ Pref($\Gamma \downarrow (S_i{\backslash} O),\, I \cap C$)
+				}
+			$E_P^\prime \leftarrow E_P^\prime \cup (e \otimes E^*)$
+			}
+		$E_P \leftarrow E_P^\prime$
+	}
+	\Return $E_P$
+	\caption{Algoritmo Pref.}
+\end{algorithm}
+	
+\begin{algorithm}
+	\SetAlgoLined
+	\KwIn{$\Gamma,\,C$}
+	\KwData{$N,\,ANC,\,ANI$}
+	\KwResult{$e,\,I$}
+	$e \leftarrow \emptyset$ \\
+	$I \leftarrow \Gamma.A$ \\
+	\tcc{N sono tutti e soli i nodi in C non attaccati da nodi in I} 
+	\While {$N \neq \emptyset \;\;$} { 
+		$e \leftarrow e \cup N$ \\
+		$ANC \leftarrow $\upshape{sottoinsieme di C contenente tutti 
+				i nodi attaccati dai nodi in N} \\
+		$ANI \leftarrow $\upshape{sottoinsieme di I contenente tutti
+				i nodi attaccati dai nodi in N} \\	
+		$C \leftarrow C {\backslash} (N \cup ANC)$ \\
+		$I \leftarrow I {\backslash} (N \cup ANI)$ \\
+	}
+	\Return $(e,\,I)$
+	\caption{Algoritmo Grounded.}
+\end{algorithm}
+
+\begin{algorithm}
+	\SetAlgoLined
+	\KwIn{$\Gamma,\,S_i,\,e$}
+	\KwResult{$O,\,I$}
+	$O \leftarrow \{ n |\; n\in S_i,\;\;\; n \;$is attacked by $m \in e \} $ \\
+	$temp \leftarrow\,\{ n |\; n \in\Gamma\setminus (S_i \cup e),\;\;\; n\;$ is attacked by $m \in e\}$ \\
+	$I \leftarrow \{ n |\; n \in S_i\setminus O,$
+		\begin{align*} % Would be fralign* instead.
+		    (\nexists n \in I: n\; \textrm{is attacked by}\; m \in \Gamma\setminus S_i ) \;\; \oplus \\
+		   	(\nexists n \in I: n\; \textrm{is attacked by}\; m \notin temp ) \\ 
+		\end{align*}
+	\Return $(O,\,I)$
+	\caption{Algoritmo Boundcond.}
+\end{algorithm}
